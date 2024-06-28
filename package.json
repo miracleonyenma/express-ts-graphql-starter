@@ -1,5 +1,5 @@
 {
-  "name": "nano-console-api",
+  "name": "express-ts-graphql-starter",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
