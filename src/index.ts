@@ -6,10 +6,15 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import { typeDefs, resolvers } from "./graphql/index.js";
+import { config } from "dotenv";
 
 interface MyContext {
   token?: string;
 }
+
+config();
+
+const PORT = process.env.PORT || 4000;
 
 // Required logic for integrating with Express
 const app = express();
@@ -43,6 +48,6 @@ app.use(
 
 // Modified server startup
 await new Promise<void>((resolve) =>
-  httpServer.listen({ port: 4000 }, resolve)
+  httpServer.listen({ port: PORT }, resolve)
 );
-console.log(`🚀 Server ready at http://localhost:4000/`);
+console.log(`🚀 Server ready at http://localhost:${PORT}/`);
