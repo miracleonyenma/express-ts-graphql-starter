@@ -1,4 +1,4 @@
-import pkg from "jsonwebtoken";
+import pkg, { JwtPayload } from "jsonwebtoken";
 import { config } from "dotenv";
 import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
@@ -14,7 +14,9 @@ const getUserFromToken = async (token: string) => {
     if (!token) {
       return null;
     }
-    return verify(token, JWT_SECRET);
+    const data = verify(token, JWT_SECRET) as JwtPayload;
+    const user = await User.findById(data.data.id).populate("roles");
+    return user;
   } catch (error) {
     return null;
   }

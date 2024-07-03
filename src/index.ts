@@ -55,7 +55,7 @@ app.use(
       const token = req.headers ? req.headers.authorization || "" : "";
 
       // try to retrieve a user with the token
-      const user = getUserFromToken(token);
+      const user = await getUserFromToken(token);
 
       // add the user to the context
       return { token, user };
