@@ -5,16 +5,21 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import express from "express";
 import http from "http";
 import cors from "cors";
-import { typeDefs, resolvers } from "./graphql/index.js";
 import { config } from "dotenv";
-
+import connectDB from "./config/db.js";
+import loggerMiddleware from "./middlewares/logger.middleware.js";
+import { getUserFromToken } from "./services/user.services.js";
+import typeDefs from "./graphql/typeDefs/index.js";
+import resolvers from "./graphql/resolvers/index.js";
 interface MyContext {
   token?: string;
+  user?: any;
 }
 
 config();
 
 const PORT = process.env.PORT || 4000;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Required logic for integrating with Express
 const app = express();
@@ -33,6 +38,8 @@ const server = new ApolloServer<MyContext>({
 // Ensure we wait for our server to start
 await server.start();
 
+app.use(loggerMiddleware);
+
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
@@ -42,9 +49,21 @@ app.use(
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req }) => ({ token: req.headers.token }),
+    context: async ({ req }) => {
+      // get the user token from the headers
+      const token = req.headers ? req.headers.authorization || "" : "";
+
+      // try to retrieve a user with the token
+      const user = getUserFromToken(token);
+
+      // add the user to the context
+      return { token, user };
+    },
   })
 );
+
+// connect database
+connectDB();
 
 // Modified server startup
 await new Promise<void>((resolve) =>
