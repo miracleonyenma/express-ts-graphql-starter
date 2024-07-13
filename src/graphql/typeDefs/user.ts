@@ -3,6 +3,7 @@ const userTypeDefs = `#graphql
     id: ID
     name: String
     email: String
+    verified: Boolean
     roles: [Role]
   }
 

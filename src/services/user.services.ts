@@ -18,6 +18,8 @@ const getUserFromToken = async (token: string) => {
     const user = await User.findById(data.data.id).populate("roles");
     return user;
   } catch (error) {
+    console.log("getUserFromToken error:", error);
+
     return null;
   }
 };

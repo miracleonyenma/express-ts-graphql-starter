@@ -1,22 +1,12 @@
-import { Types } from "mongoose";
 import User from "../../models/user.model.js";
 import pkg from "jsonwebtoken";
 import { config } from "dotenv";
+import { createToken } from "../../utils/token.js";
 
 const { sign } = pkg;
 config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
-
-const createToken = (
-  data: any | { id: Types.ObjectId },
-  // defualt 3 days
-  dur = 3 * 24 * 60 * 60
-) => {
-  return sign({ data }, JWT_SECRET, {
-    expiresIn: dur,
-  });
-};
 
 const userResolvers = {
   Query: {
@@ -56,6 +46,14 @@ const userResolvers = {
       }
     },
     me: async (parent, args, context, info) => {
+      console.log("context", context);
+
+      const id = context?.user?.id;
+
+      if (!id) {
+        throw new Error("Unable to authenticate user");
+      }
+
       try {
         return await User.findById(context.user.id).populate("roles");
       } catch (error) {

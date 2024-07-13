@@ -1,3 +1,4 @@
+import otpTypeDefs from "./otp.js";
 import roleTypeDefs from "./role.js";
 import userTypeDefs from "./user.js";
 
@@ -19,6 +20,7 @@ const typeDefs = `
   ${globalTypeDefs}
   ${userTypeDefs}
   ${roleTypeDefs}
+  ${otpTypeDefs}
 `;
 
 export default typeDefs;

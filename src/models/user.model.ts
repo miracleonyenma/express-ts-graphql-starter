@@ -1,7 +1,13 @@
 import mongoose, { Schema } from "mongoose";
 import { genSalt, hash, compare } from "bcrypt";
 import { object, string } from "yup";
+import otpGenerator from "otp-generator";
 import { assignRoleToUser } from "../services/user.services.js";
+import OTP from "./otp.model.js";
+import {
+  initOTPGeneration,
+  sendVerificationMail,
+} from "../services/otp.services.js";
 
 const registerUserSchema = object({
   name: string().required(),
@@ -32,6 +38,10 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+    },
+    verified: {
+      type: Boolean,
+      default: false,
     },
     roles: [
       {
@@ -73,6 +83,10 @@ const userSchema = new mongoose.Schema(
           // assign user role
           await assignRoleToUser(user._id.toString(), "user");
           const userWithRoles = await this.findById(user._id).populate("roles");
+
+          // send verification email
+          await initOTPGeneration(email);
+
           return userWithRoles;
         } catch (error) {
           throw new Error(error);
@@ -97,6 +111,10 @@ const userSchema = new mongoose.Schema(
           const isMatch = await compare(password, user.password);
           if (!isMatch) {
             throw new Error("Invalid credentials");
+          }
+          // check if user is verified
+          if (!user.verified) {
+            throw new Error("User is not verified");
           }
           return user;
         } catch (error) {
