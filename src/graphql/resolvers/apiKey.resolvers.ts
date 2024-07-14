@@ -4,8 +4,6 @@ import User from "../../models/user.model.js";
 import Role from "../../models/role.model.js";
 
 const checkIfAuthorized = async (context) => {
-  console.log("context", context);
-
   const contextUser = context?.user?.data;
 
   if (!contextUser.id) {
@@ -30,8 +28,6 @@ const ApiKeyResolvers = {
   Query: {
     apiKeys: async (parent, args, context, info) => {
       try {
-        console.log("context", context);
-
         await checkIfAuthorized(context);
 
         const apiKeys = await ApiKey.find({}).populate("owner");
@@ -56,7 +52,6 @@ const ApiKeyResolvers = {
     generateApiKey: async (parent, args, context, info) => {
       try {
         const user = await checkIfAuthorized(context);
-        console.log("user", user);
 
         const apiKey = generateApiKey();
 

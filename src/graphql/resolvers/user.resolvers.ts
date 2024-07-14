@@ -57,8 +57,6 @@ const userResolvers = {
       }
     },
     me: async (parent, args, context, info) => {
-      console.log("context", context);
-
       const id = context?.user?.data?.id;
 
       if (!id) {
