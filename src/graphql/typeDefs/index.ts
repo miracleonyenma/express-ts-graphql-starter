@@ -1,3 +1,4 @@
+import apiKeyTypeDefs from "./apiKey.js";
 import otpTypeDefs from "./otp.js";
 import roleTypeDefs from "./role.js";
 import userTypeDefs from "./user.js";
@@ -21,6 +22,7 @@ const typeDefs = `
   ${userTypeDefs}
   ${roleTypeDefs}
   ${otpTypeDefs}
+  ${apiKeyTypeDefs}
 `;
 
 export default typeDefs;

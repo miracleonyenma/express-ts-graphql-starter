@@ -3,7 +3,7 @@ const userTypeDefs = `#graphql
     id: ID
     name: String
     email: String
-    verified: Boolean
+    emailVerified: Boolean
     roles: [Role]
   }
 
@@ -13,7 +13,12 @@ const userTypeDefs = `#graphql
   }
 
   type AuthData {
-    token: String
+    accessToken: String
+    refreshToken: String
+    user: User
+  }
+
+  type RegisterData {
     user: User
   }
 
@@ -33,6 +38,10 @@ const userTypeDefs = `#graphql
     email: String
   }
 
+  type RefreshPayload {
+    accessToken: String!
+  }
+
 
   type Query {
     users(pagination: Pagination): UserData
@@ -41,8 +50,9 @@ const userTypeDefs = `#graphql
   }
 
   type Mutation {
-    register(input: RegisterInput!): AuthData
+    register(input: RegisterInput!): RegisterData
     login(input: LoginInput!): AuthData
+    refreshToken(token: String!): RefreshPayload!
     updateUser(input: UpdateUserInput!): User
     deleteUser(id: ID!): User
   }

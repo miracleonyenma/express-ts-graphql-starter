@@ -35,11 +35,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    picture: {
+      type: String,
+    },
+    count: {
+      type: Number,
+      default: 0,
+    },
     password: {
       type: String,
       required: true,
     },
-    verified: {
+    emailVerified: {
       type: Boolean,
       default: false,
     },
@@ -113,7 +120,7 @@ const userSchema = new mongoose.Schema(
             throw new Error("Invalid credentials");
           }
           // check if user is verified
-          if (!user.verified) {
+          if (!user.emailVerified) {
             throw new Error("User is not verified");
           }
           return user;

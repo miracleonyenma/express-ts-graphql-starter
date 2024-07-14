@@ -1,12 +1,23 @@
 import User from "../../models/user.model.js";
 import pkg from "jsonwebtoken";
 import { config } from "dotenv";
-import { createToken } from "../../utils/token.js";
+import {
+  createAccessToken,
+  createRefreshToken,
+  verifyRefreshToken,
+} from "../../utils/token.js";
 
 const { sign } = pkg;
 config();
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const accessTokenData = (user) => {
+  return {
+    id: user._id,
+    email: user.email,
+    roles: user.roles,
+    emailVerified: user.emailVerified,
+  };
+};
 
 const userResolvers = {
   Query: {
@@ -34,7 +45,7 @@ const userResolvers = {
       } catch (error) {
         console.log("Query.users error", error);
 
-        throw new Error(error);
+        throw error;
       }
     },
     user: async (parent, args, context, info) => {
@@ -42,23 +53,23 @@ const userResolvers = {
         return await User.findById(args.id).populate("roles");
       } catch (error) {
         console.log("Query.user error", error);
-        throw new Error(error);
+        throw error;
       }
     },
     me: async (parent, args, context, info) => {
       console.log("context", context);
 
-      const id = context?.user?.id;
+      const id = context?.user?.data?.id;
 
       if (!id) {
         throw new Error("Unable to authenticate user");
       }
 
       try {
-        return await User.findById(context.user.id).populate("roles");
+        return await User.findById(id).populate("roles");
       } catch (error) {
         console.log("Query.me error", error);
-        throw new Error(error);
+        throw error;
       }
     },
   },
@@ -66,21 +77,33 @@ const userResolvers = {
     register: async (parent, args, context, info) => {
       try {
         const user = (await User.registerUser(args.input)).populate("roles");
-        const token = createToken({ id: (await user).id });
-        return { token, user };
+        return { user };
       } catch (error) {
         console.log("Mutation.register error", error);
-        throw new Error(error);
+        throw error;
       }
     },
     login: async (parent, args, context, info) => {
       try {
         const user = await User.loginUser(args.input);
-        const token = createToken({ id: user._id });
-        return { token, user };
+        const accessToken = createAccessToken(accessTokenData(user));
+        const refreshToken = createRefreshToken({ id: user._id });
+        return { accessToken, refreshToken, user };
       } catch (error) {
         console.log("Mutation.login error", error);
-        throw new Error(error);
+        throw error;
+      }
+    },
+    refreshToken: async (parent, { token }, context, info) => {
+      try {
+        const decoded = verifyRefreshToken(token);
+        console.log({ decoded });
+
+        const user = await User.findById(decoded.data.id);
+        const accessToken = createAccessToken(accessTokenData(user));
+        return { accessToken };
+      } catch (error) {
+        throw new Error("Invalid refresh token");
       }
     },
     updateUser: async (parent, args, context, info) => {
@@ -90,7 +113,7 @@ const userResolvers = {
         });
       } catch (error) {
         console.log("Mutation.updateUser error", error);
-        throw new Error(error);
+        throw error;
       }
     },
     deleteUser: async (parent, args, context, info) => {
@@ -99,7 +122,7 @@ const userResolvers = {
         return await User.findByIdAndDelete(id);
       } catch (error) {
         console.log("Mutation.deleteUser error", error);
-        throw new Error(error);
+        throw error;
       }
     },
   },

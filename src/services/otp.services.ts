@@ -2,6 +2,10 @@ import otpGenerator from "otp-generator";
 import { mailSender } from "../utils/mail.js";
 import OTP from "../models/otp.model.js";
 import User from "../models/user.model.js";
+import { config } from "dotenv";
+config();
+
+const { MAIL_LOGO } = process.env;
 
 const sendVerificationMail = async (email: string, otp: string) => {
   try {
@@ -33,7 +37,7 @@ const sendVerificationMail = async (email: string, otp: string) => {
           "
         >
           <img
-            src="https://res.cloudinary.com/alphas/image/upload/v1720774037/appstore/nano-no-bg_izjmy5.png"
+            src="${MAIL_LOGO}"
             alt="logo"
             srcset=""
             width="32"

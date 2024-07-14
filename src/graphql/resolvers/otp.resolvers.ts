@@ -64,7 +64,7 @@ const OTPResolvers = {
           throw new Error("User not found");
         }
         // set user as verified
-        user.verified = true;
+        user.emailVerified = true;
         const updatedUser = await user.save();
 
         console.log({ updatedUser });

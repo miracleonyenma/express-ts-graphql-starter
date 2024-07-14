@@ -1,4 +1,4 @@
-// npm install @apollo/server express graphql cors
+import { Request } from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
@@ -11,6 +11,8 @@ import loggerMiddleware from "./middlewares/logger.middleware.js";
 import { getUserFromToken } from "./services/user.services.js";
 import typeDefs from "./graphql/typeDefs/index.js";
 import resolvers from "./graphql/resolvers/index.js";
+import { authenticate } from "./middlewares/auth.middleware.js";
+import { validateApiKey } from "./middlewares/apiKey.middleware.js";
 interface MyContext {
   token?: string;
   user?: any;
@@ -39,7 +41,14 @@ const server = new ApolloServer<MyContext>({
 // Ensure we wait for our server to start
 await server.start();
 
+// our loggerMiddleware.
 app.use(loggerMiddleware);
+
+// validate API Key middleware
+app.use(validateApiKey);
+
+// our authenticate middleware.
+app.use(authenticate);
 
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
@@ -50,15 +59,11 @@ app.use(
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req }) => {
-      // get the user token from the headers
-      const token = req.headers ? req.headers.authorization || "" : "";
-
-      // try to retrieve a user with the token
-      const user = await getUserFromToken(token);
+    context: async ({ req }: { req: Request }) => {
+      const user = (req as any).user;
 
       // add the user to the context
-      return { token, user };
+      return { user };
     },
   })
 );
