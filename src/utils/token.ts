@@ -39,10 +39,20 @@ const generateApiKey = (): string => {
   return crypto.randomBytes(32).toString("hex");
 };
 
+const accessTokenData = (user) => {
+  return {
+    id: user._id,
+    email: user.email,
+    roles: user.roles,
+    emailVerified: user.emailVerified,
+  };
+};
+
 export {
   createAccessToken,
   createRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
   generateApiKey,
+  accessTokenData,
 };

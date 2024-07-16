@@ -6,11 +6,11 @@ import Role from "../../models/role.model.js";
 const checkIfAuthorized = async (context) => {
   const contextUser = context?.user?.data;
 
-  if (!contextUser.id) {
+  if (!contextUser?.id) {
     throw new Error("Unauthorized");
   }
 
-  const user = await User.findById(contextUser.id).populate("roles");
+  const user = await User.findById(contextUser?.id).populate("roles");
   if (!user) {
     throw new Error("User not found");
   }

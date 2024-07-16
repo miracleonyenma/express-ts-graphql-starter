@@ -2,6 +2,7 @@ import User from "../../models/user.model.js";
 import pkg from "jsonwebtoken";
 import { config } from "dotenv";
 import {
+  accessTokenData,
   createAccessToken,
   createRefreshToken,
   verifyRefreshToken,
@@ -9,15 +10,6 @@ import {
 
 const { sign } = pkg;
 config();
-
-const accessTokenData = (user) => {
-  return {
-    id: user._id,
-    email: user.email,
-    roles: user.roles,
-    emailVerified: user.emailVerified,
-  };
-};
 
 const userResolvers = {
   Query: {

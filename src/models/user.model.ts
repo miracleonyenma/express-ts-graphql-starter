@@ -4,6 +4,8 @@ import { object, string } from "yup";
 import otpGenerator from "otp-generator";
 import { assignRoleToUser } from "../services/user.services.js";
 import OTP from "./otp.model.js";
+import Role from "./role.model.js";
+
 import {
   initOTPGeneration,
   sendVerificationMail,
@@ -156,6 +158,47 @@ const userSchema = new mongoose.Schema(
           return this.findByIdAndUpdate(id, { name, email }, { new: true });
         } catch (error) {
           throw new Error(error);
+        }
+      },
+      async upsertGoogleUser({
+        email,
+        name,
+        picture,
+        verified_email,
+      }: {
+        email: string;
+        name: string;
+        picture: string;
+        verified_email: boolean;
+      }) {
+        try {
+          const userRole = await Role.findOne({ name: "user" });
+          const user = await this.findOneAndUpdate(
+            { email },
+            {
+              name,
+              email,
+              picture,
+              emailVerified: verified_email,
+              roles: [userRole._id],
+            },
+            { new: true, upsert: true }
+          );
+
+          console.log("👤👤👤👤👤 ~ user", user);
+
+          // assign user role
+          // await assignRoleToUser(user._id.toString(), "user");
+          // const userWithRoles = await user.populate("roles");
+
+          const userWithRoles = await user.populate("roles");
+          console.log("👤👤👤👤👤 ~ userWithRoles", userWithRoles);
+
+          return userWithRoles;
+        } catch (error) {
+          console.log("👤👤👤👤👤 ~ error", error);
+
+          throw new Error(error.message);
         }
       },
     },
