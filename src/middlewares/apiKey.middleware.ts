@@ -13,10 +13,16 @@ const validateApiKey = async (
   try {
     const apiKey = req.headers["x-api-key"] as string;
 
+    console.log("🪵🪵🪵🪵🪵 ~ apiKey: ", apiKey);
+
     // console.log("🪵🪵🪵🪵🪵 ~ path", req.path);
     // console.log("🪵🪵🪵🪵🪵 ~ method", req.method);
 
-    if ((req.path == "/graphql" || "/") && req.method == "GET") return next();
+    if (
+      (req.path == "/graphql" || "/") &&
+      (req.method == "GET" || req.method == "OPTIONS")
+    )
+      return next();
 
     if (!apiKey) {
       return res.status(401).json({ error: "API key is required" });
