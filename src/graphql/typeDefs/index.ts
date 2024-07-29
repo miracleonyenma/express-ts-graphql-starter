@@ -2,6 +2,7 @@ import apiKeyTypeDefs from "./apiKey.js";
 import googleAuthTypeDefs from "./google.auth.js";
 import otpTypeDefs from "./otp.js";
 import roleTypeDefs from "./role.js";
+import urlTypeDefs from "./url.js";
 import userTypeDefs from "./user.js";
 
 const globalTypeDefs = `#graphql
@@ -24,6 +25,7 @@ const typeDefs = `
   ${roleTypeDefs}
   ${otpTypeDefs}
   ${apiKeyTypeDefs}
+  ${urlTypeDefs}
   ${googleAuthTypeDefs}
 `;
 

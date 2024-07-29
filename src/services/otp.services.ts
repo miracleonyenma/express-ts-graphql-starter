@@ -5,21 +5,21 @@ import User from "../models/user.model.js";
 import { config } from "dotenv";
 config();
 
-const { MAIL_LOGO } = process.env;
+const { MAIL_LOGO, APP_NAME = "Alphas" } = process.env;
 
 const sendVerificationMail = async (email: string, otp: string) => {
   try {
     // send email
     const mailResponse = await mailSender(
       email,
-      "Email Verification",
+      `${APP_NAME}  Email Verification`,
       `
     <div
       style="
         text-align: center;
         padding: 20px;
         background-color: #4f46e5;
-        color: #d9d8ff;
+        color: #ECFDF;
         height: 100vh;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
           Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
@@ -45,7 +45,7 @@ const sendVerificationMail = async (email: string, otp: string) => {
           />
         </div>
         <span style="margin-left: 0.5rem; font-size: large; font-weight: 700">
-          Nano Apps
+          ${APP_NAME}
         </span>
       </div>
       <div style="text-align: center; padding-top: 4rem; padding-bottom: 4rem">

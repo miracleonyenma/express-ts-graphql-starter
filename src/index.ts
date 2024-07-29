@@ -13,6 +13,7 @@ import typeDefs from "./graphql/typeDefs/index.js";
 import resolvers from "./graphql/resolvers/index.js";
 import { authenticate } from "./middlewares/auth.middleware.js";
 import { validateApiKey } from "./middlewares/apiKey.middleware.js";
+import { redirect } from "./controllers/url.controller.js";
 interface MyContext {
   token?: string;
   user?: any;
@@ -43,6 +44,9 @@ await server.start();
 
 // our loggerMiddleware.
 app.use(loggerMiddleware);
+
+// routes
+app.get("/:code", redirect);
 
 // validate API Key middleware
 app.use(validateApiKey);
