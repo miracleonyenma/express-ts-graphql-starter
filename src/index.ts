@@ -45,19 +45,18 @@ await server.start();
 // our loggerMiddleware.
 app.use(loggerMiddleware);
 
-// routes
-app.get("/:code", redirect);
-
 // validate API Key middleware
-app.use(validateApiKey);
+// app.use(validateApiKey);
 
 // our authenticate middleware.
-app.use(authenticate);
+// app.use(authenticate);
 
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
   "/graphql",
+  validateApiKey,
+  authenticate,
   cors<cors.CorsRequest>(),
   express.json(),
   // expressMiddleware accepts the same arguments:
@@ -71,6 +70,9 @@ app.use(
     },
   })
 );
+
+// routes
+app.get("/:code", redirect);
 
 // connect database
 connectDB();
