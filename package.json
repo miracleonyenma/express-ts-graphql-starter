@@ -6,8 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc",
     "start": "npm run compile && node ./dist/index.js",
-    "dev": "nodemon",
-    "preinstall": "npm i nodemon -g"
+    "dev": "nodemon"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +22,7 @@
     "graphql": "^16.9.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.1",
+    "nanoid": "^5.0.7",
     "nodemailer": "^6.9.14",
     "otp-generator": "^4.0.1",
     "yup": "^1.4.0"

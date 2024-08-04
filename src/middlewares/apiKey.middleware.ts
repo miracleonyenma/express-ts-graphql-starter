@@ -10,22 +10,35 @@ const validateApiKey = async (
   res: Response,
   next: NextFunction
 ) => {
-  const apiKey = req.headers["x-api-key"] as string;
+  try {
+    const apiKey = req.headers["x-api-key"] as string;
 
-  if (req.path == "/graphql" && req.method == "GET") return next();
+    console.log("🪵🪵🪵🪵🪵 ~ apiKey: ", apiKey);
 
-  if (!apiKey) {
-    return res.status(401).json({ error: "API key is required" });
+    // console.log("🪵🪵🪵🪵🪵 ~ path", req.path);
+    // console.log("🪵🪵🪵🪵🪵 ~ method", req.method);
+
+    if (
+      (req.path == "/graphql" || "/") &&
+      (req.method == "GET" || req.method == "OPTIONS")
+    )
+      return next();
+
+    if (!apiKey) {
+      return res.status(401).json({ error: "API key is required" });
+    }
+
+    const key = await ApiKey.findOne({ key: apiKey });
+
+    if (!key) {
+      return res.status(403).json({ error: "Invalid API key" });
+    }
+
+    req.apiKey = apiKey;
+    next();
+  } catch (error) {
+    console.log("🚨🚨🚨🚨🚨 ~ error", error);
   }
-
-  const key = await ApiKey.findOne({ key: apiKey });
-
-  if (!key) {
-    return res.status(403).json({ error: "Invalid API key" });
-  }
-
-  req.apiKey = apiKey;
-  next();
 };
 
 export { validateApiKey };
