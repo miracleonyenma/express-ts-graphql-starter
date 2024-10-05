@@ -31,7 +31,8 @@ const googleAuthResolvers = {
         // upsert user
         const user = await User.upsertGoogleUser({
           email: googleUser.email,
-          name: googleUser.name,
+          firstName: googleUser.given_name,
+          lastName: googleUser.family_name,
           picture: googleUser.picture,
           verified_email: googleUser.verified_email,
         });

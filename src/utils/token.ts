@@ -12,7 +12,7 @@ const REFRESH_TOKEN_SECRET =
   process.env.REFRESH_TOKEN_SECRET || "yourrefreshtokensecret";
 
 // Create access token
-const createAccessToken = (data: any | { id: Types.ObjectId }, dur = "15m") => {
+const createAccessToken = (data: any | { id: Types.ObjectId }, dur = "3d") => {
   return sign({ data }, ACCESS_TOKEN_SECRET, {
     expiresIn: dur,
   });
@@ -39,6 +39,10 @@ const generateApiKey = (): string => {
   return crypto.randomBytes(32).toString("hex");
 };
 
+const generateResetToken = (): string => {
+  return crypto.randomBytes(20).toString("hex");
+};
+
 const accessTokenData = (user) => {
   return {
     id: user._id,
@@ -54,5 +58,6 @@ export {
   verifyAccessToken,
   verifyRefreshToken,
   generateApiKey,
+  generateResetToken,
   accessTokenData,
 };

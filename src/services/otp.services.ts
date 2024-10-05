@@ -1,61 +1,25 @@
 import otpGenerator from "otp-generator";
-import { mailSender } from "../utils/mail.js";
+import { generateEmailTemplate, mailSender } from "../utils/mail.js";
 import OTP from "../models/otp.model.js";
 import User from "../models/user.model.js";
 import { config } from "dotenv";
 config();
 
-const { MAIL_LOGO, APP_NAME = "Alphas" } = process.env;
+const { MAIL_LOGO } = process.env;
 
 const sendVerificationMail = async (email: string, otp: string) => {
+  const content = `
+    <p>Your OTP is: <br /> <strong style="font-size: 4rem;">${otp}</strong></p>
+  `;
+
+  const emailBody = generateEmailTemplate("Email Verification", content);
+
   try {
-    // send email
     const mailResponse = await mailSender(
       email,
-      `${APP_NAME}  Email Verification`,
-      `
-    <div
-      style="
-        text-align: center;
-        padding: 20px;
-        background-color: #4f46e5;
-        color: #ECFDF;
-        height: 100vh;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-          Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
-          sans-serif;
-        font-weight: 300;
-      "
-    >
-      <div style="width: 100%">
-        <div
-          style="
-            width: 32px;
-            height: 32px;
-            display: inline-block;
-            vertical-align: middle;
-          "
-        >
-          <img
-            src="${MAIL_LOGO}"
-            alt="logo"
-            srcset=""
-            width="32"
-            height="32"
-          />
-        </div>
-        <span style="margin-left: 0.5rem; font-size: large; font-weight: 700">
-          ${APP_NAME}
-        </span>
-      </div>
-      <div style="text-align: center; padding-top: 4rem; padding-bottom: 4rem">
-        <h1>Email Verification</h1>
-        <p>Your OTP is: <strong>${otp}</strong></p>
-      </div>
-    </div>
-      `
+      "Email Verification",
+      emailBody
     );
-
     return mailResponse;
   } catch (error) {
     throw new Error(error);

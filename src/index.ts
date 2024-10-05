@@ -48,14 +48,12 @@ app.use(loggerMiddleware);
 // app.use(validateApiKey);
 
 // our authenticate middleware.
-// app.use(authenticate);
+app.use(authenticate);
 
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
   "/graphql",
-  validateApiKey,
-  authenticate,
   cors<cors.CorsRequest>(),
   express.json(),
   // expressMiddleware accepts the same arguments:

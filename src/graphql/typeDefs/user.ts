@@ -1,7 +1,9 @@
 const userTypeDefs = `#graphql
   type User {
     id: ID
-    name: String
+    firstName: String
+    lastName: String
+    picture: String
     email: String
     emailVerified: Boolean
     roles: [Role]
@@ -23,7 +25,8 @@ const userTypeDefs = `#graphql
   }
 
   input RegisterInput {
-    name: String!
+    firstName: String!
+    lastName: String!
     email: String!
     password: String!
   }
@@ -34,7 +37,8 @@ const userTypeDefs = `#graphql
   }
 
   input UpdateUserInput {
-    name: String
+    firstName: String
+    lastName: String
     email: String
   }
 

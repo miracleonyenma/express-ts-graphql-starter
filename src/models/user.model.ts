@@ -11,8 +11,20 @@ import {
   sendVerificationMail,
 } from "../services/otp.services.js";
 
+type User = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  picture: string;
+  count: number;
+  password: string;
+  emailVerified: boolean;
+  roles: string[];
+};
+
 const registerUserSchema = object({
-  name: string().required(),
+  firstName: string().trim().min(2).required(),
+  lastName: string().trim().min(3).required(),
   email: string().email().required(),
   password: string().min(6).required(),
 });
@@ -23,13 +35,18 @@ const loginUserSchema = object({
 });
 
 const editUserSchema = object({
-  name: string().required(),
+  firstName: string().trim().min(2).required(),
+  lastName: string().trim().min(3).required(),
   email: string().email().required(),
 });
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
       type: String,
       required: true,
     },
@@ -46,7 +63,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
     },
     emailVerified: {
       type: Boolean,
@@ -63,30 +80,26 @@ const userSchema = new mongoose.Schema(
   {
     timestamps: true,
     statics: {
-      async registerUser({
-        name,
-        email,
-        password,
-      }: {
-        name: string;
+      async registerUser(data: {
+        firstName: string;
+        lastName: string;
         email: string;
         password: string;
       }) {
         try {
           // validate user input
-          await registerUserSchema.validate({ name, email, password });
+          await registerUserSchema.validate(data);
           // check if user exists
-          const existingUser = await this.findOne({ email });
+          const existingUser = await this.findOne({ email: data.email });
           if (existingUser) {
             throw new Error("User already exists");
           }
           // hash password
           const salt = await genSalt(10);
-          const hashedPassword = await hash(password, salt);
+          const hashedPassword = await hash(data.password, salt);
           // create user
           const user = await this.create({
-            name,
-            email,
+            ...data,
             password: hashedPassword,
           });
           // assign user role
@@ -94,7 +107,7 @@ const userSchema = new mongoose.Schema(
           const userWithRoles = await this.findById(user._id).populate("roles");
 
           // send verification email
-          await initOTPGeneration(email);
+          await initOTPGeneration(data.email);
 
           return userWithRoles;
         } catch (error) {
@@ -108,27 +121,28 @@ const userSchema = new mongoose.Schema(
         email: string;
         password: string;
       }) {
-        try {
-          // validate user input
-          await loginUserSchema.validate({ email, password });
-          // check if user exists
-          const user = await this.findOne({ email });
-          if (!user) {
-            throw new Error("User does not exist");
-          }
-          // compare password
-          const isMatch = await compare(password, user.password);
-          if (!isMatch) {
-            throw new Error("Invalid credentials");
-          }
-          // check if user is verified
-          if (!user.emailVerified) {
-            throw new Error("User is not verified");
-          }
-          return user;
-        } catch (error) {
-          throw new Error(error);
+        // validate user input
+        await loginUserSchema.validate({ email, password });
+        // check if user exists
+        const user = await this.findOne({ email }).populate("roles");
+        if (!user) {
+          throw new Error("User does not exist");
         }
+        if (!user.password) {
+          throw new Error(
+            "Seems like you have signed up with Google. Please login with Google"
+          );
+        }
+        // compare password
+        const isMatch = await compare(password, user.password);
+        if (!isMatch) {
+          throw new Error("Invalid credentials");
+        }
+        // check if user is verified
+        if (!user.emailVerified) {
+          throw new Error("User is not verified");
+        }
+        return user;
       },
       async me({ id }: { id: string }) {
         try {
@@ -139,35 +153,43 @@ const userSchema = new mongoose.Schema(
       },
       async editUser({
         id,
-        name,
+        firstName,
+        lastName,
         email,
       }: {
         id: string;
-        name: string;
+        firstName: string;
+        lastName: string;
         email: string;
       }) {
         try {
           // validate user input
-          await editUserSchema.validate({ name, email });
+          await editUserSchema.validate({ firstName, lastName, email });
           // check if user exists
           const user = await this.findById(id);
           if (!user) {
             throw new Error("User does not exist");
           }
           // update user
-          return this.findByIdAndUpdate(id, { name, email }, { new: true });
+          return this.findByIdAndUpdate(
+            id,
+            { firstName, lastName, email },
+            { new: true }
+          );
         } catch (error) {
           throw new Error(error);
         }
       },
       async upsertGoogleUser({
         email,
-        name,
+        firstName,
+        lastName,
         picture,
         verified_email,
       }: {
         email: string;
-        name: string;
+        firstName: string;
+        lastName: string;
         picture: string;
         verified_email: boolean;
       }) {
@@ -176,7 +198,8 @@ const userSchema = new mongoose.Schema(
           const user = await this.findOneAndUpdate(
             { email },
             {
-              name,
+              firstName,
+              lastName,
               email,
               picture,
               emailVerified: verified_email,

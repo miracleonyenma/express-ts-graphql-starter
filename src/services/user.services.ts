@@ -2,7 +2,6 @@ import pkg, { JwtPayload } from "jsonwebtoken";
 import { config } from "dotenv";
 import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
-import { AccessTokenResponse, GoogleUser } from "../types/user.js";
 
 config();
 
@@ -32,7 +31,7 @@ const assignRoleToUser = async (userId: string, roleName: string) => {
   if (user && role) {
     user.roles.push(role._id);
     await user.save();
-    console.log(`Role ${roleName} assigned to user ${user.name}.`);
+    console.log(`Role ${roleName} assigned to user ${user.firstName}.`);
   } else {
     console.log("User or Role not found.");
   }
