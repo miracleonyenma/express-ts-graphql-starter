@@ -46,11 +46,11 @@ const generateEmailTemplate = (title: string, content: string) => `
     "
   >
     <!-- Header -->
-    <div style="width: 100%; margin-bottom: 20px;">
+    <div style="width: 100%; margin-bottom: 20px; display: flex; align-items: center;">
       <div
         style="
-          width: 40px;
-          height: 40px;
+          width: 48px;
+          height: 48px;
           display: inline-block;
           vertical-align: middle;
         "
@@ -58,11 +58,11 @@ const generateEmailTemplate = (title: string, content: string) => `
         <img
           src="${MAIL_LOGO}"
           alt="${APP_NAME} Logo"
-          width="40"
-          height="40"
+          width="48"
+          height="48"
         />
       </div>
-      <span style="margin-left: 10px; font-size: 24px; font-weight: bold; color: #1f1b4a;">
+      <span style="margin-left: 10px; font-size: 1.25rem; font-weight: bold; color: #1f1b4a;">
         ${APP_NAME}
       </span>
     </div>
