@@ -5,11 +5,9 @@ import User from "../models/user.model.js";
 import { config } from "dotenv";
 config();
 
-const { MAIL_LOGO } = process.env;
-
 const sendVerificationMail = async (email: string, otp: string) => {
   const content = `
-    <p>Your OTP is: <br /> <strong style="font-size: 4rem;">${otp}</strong></p>
+    <p>Your OTP is: <br /> <strong style="font-size: 2.25rem;">${otp}</strong></p>
   `;
 
   const emailBody = generateEmailTemplate("Email Verification", content);

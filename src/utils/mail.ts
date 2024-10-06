@@ -16,7 +16,7 @@ const mailSender = async (email: string, subject: string, body: string) => {
     });
 
     let mailOptions: SendMailOptions = {
-      from: process.env.MAIL_USER,
+      from: `${APP_NAME} ${process.env.MAIL_USER}`,
       to: email,
       subject: subject,
       html: body,
@@ -37,7 +37,7 @@ const generateEmailTemplate = (title: string, content: string) => `
       text-align: left;
       padding: 40px;
       background-color: #ffffff;
-      color: #333333;
+      color: #1f1b4a;
       font-family: Arial, sans-serif;
       font-size: 14px;
       line-height: 1.5;
@@ -60,14 +60,14 @@ const generateEmailTemplate = (title: string, content: string) => `
           height="40"
         />
       </div>
-      <span style="margin-left: 10px; font-size: 24px; font-weight: bold; color: #4f46e5;">
+      <span style="margin-left: 10px; font-size: 24px; font-weight: bold; color: #1f1b4a;">
         ${APP_NAME}
       </span>
     </div>
     
     <!-- Main Content -->
     <div style="text-align: left; padding-bottom: 20px;">
-      <h1 style="font-size: 20px; color: #333333;">${title}</h1>
+      <h1 style="font-size: 20px; color: #1f1b4a;">${title}</h1>
       ${content}
     </div>
 
@@ -83,7 +83,7 @@ const generateEmailTemplate = (title: string, content: string) => `
     >
       <p>
         If you have any questions, please contact us at
-        <a href="${APP_SUPPORT_MAIL}" style="color: #4f46e5;">support@nanoapps.store</a>.
+        <a href="${APP_SUPPORT_MAIL}" style="color: #1f1b4a;">${APP_SUPPORT_MAIL}</a>.
       </p>
       <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
     </div>

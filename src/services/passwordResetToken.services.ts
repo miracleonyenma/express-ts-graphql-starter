@@ -8,7 +8,7 @@ const sendPasswordResetMail = async (email: string, token: string) => {
     <p>
       You are receiving this email because you requested a password reset for your account.
     </p>
-    <a href="${resetURL}" style="background-color: #d9d8ff; color: #4f46e5; padding: 1rem; border-radius: 5px; text-decoration: none; margin-top:3rem;">
+    <a href="${resetURL}" style="background-color: #d9d8ff; color: #1f1b4a; padding: 1rem; border-radius: 5px; text-decoration: none; margin-top:3rem;">
       Reset Password
     </a>
     <p style="margin-top:3rem;">
