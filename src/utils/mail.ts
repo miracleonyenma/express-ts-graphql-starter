@@ -1,8 +1,10 @@
 import nodemailer, { SendMailOptions } from "nodemailer";
 const { MAIL_LOGO } = process.env;
 
-const APP_SUPPORT_MAIL = "tryparkit@gmail.com";
-const APP_NAME = "Sparkit";
+const APP_NAME = process.env.APP_NAME;
+const MAIL_USER = process.env.MAIL_USER;
+const MAIL_PASS = process.env.MAIL_PASS;
+const APP_SUPPORT_MAIL = MAIL_USER;
 
 const mailSender = async (email: string, subject: string, body: string) => {
   try {
@@ -10,13 +12,13 @@ const mailSender = async (email: string, subject: string, body: string) => {
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
+        user: MAIL_USER,
+        pass: MAIL_PASS,
       },
     });
 
     let mailOptions: SendMailOptions = {
-      from: `${APP_NAME} ${process.env.MAIL_USER}`,
+      from: `${APP_NAME} ${MAIL_USER}`,
       to: email,
       subject: subject,
       html: body,
