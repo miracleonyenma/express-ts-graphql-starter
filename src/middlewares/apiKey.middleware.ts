@@ -13,7 +13,7 @@ const validateApiKey = async (
   try {
     const apiKey = req.headers["x-api-key"] as string;
 
-    console.log("🪵🪵🪵🪵🪵 ~ apiKey: ", apiKey);
+    // console.log("🪵🪵🪵🪵🪵 ~ apiKey: ", apiKey);
 
     // console.log("🪵🪵🪵🪵🪵 ~ path", req.path);
     // console.log("🪵🪵🪵🪵🪵 ~ method", req.method);
