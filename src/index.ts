@@ -45,7 +45,7 @@ await server.start();
 app.use(loggerMiddleware);
 
 // validate API Key middleware
-// app.use(validateApiKey);
+app.use(validateApiKey);
 
 // our authenticate middleware.
 app.use(authenticate);
