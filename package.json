@@ -14,16 +14,16 @@
   "description": "",
   "type": "module",
   "dependencies": {
-    "@apollo/server": "^4.10.5",
+    "@apollo/server": "^4.11.2",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": "^4.21.1",
     "graphql": "^16.9.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.5.1",
-    "nanoid": "^5.0.7",
-    "nodemailer": "^6.9.14",
+    "mongoose": "^8.8.2",
+    "nanoid": "^5.0.8",
+    "nodemailer": "^6.9.16",
     "otp-generator": "^4.0.1",
     "yup": "^1.4.0"
   },
@@ -31,11 +31,11 @@
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20.14.13",
-    "@types/nodemailer": "^6.4.15",
+    "@types/nodemailer": "^6.4.17",
     "@types/otp-generator": "^4.0.2",
-    "nodemon": "^3.1.4",
-    "typescript": "^5.5.4"
+    "nodemon": "^3.1.7",
+    "typescript": "^5.6.3"
   }
 }
