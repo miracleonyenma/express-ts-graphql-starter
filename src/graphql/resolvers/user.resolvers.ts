@@ -7,6 +7,7 @@ import {
   createRefreshToken,
   verifyRefreshToken,
 } from "../../utils/token.js";
+import { checkUser } from "../../utils/user.js";
 
 const { sign } = pkg;
 config();
@@ -98,9 +99,12 @@ const userResolvers = {
     },
     updateUser: async (parent, args, context, info) => {
       try {
-        return await User.findByIdAndUpdate(context.user.id, args.input, {
+        const user = await checkUser(context.user.data?.id);
+        const updatedUser = await User.findByIdAndUpdate(user.id, args.input, {
           new: true,
         });
+
+        return updatedUser;
       } catch (error) {
         console.log("Mutation.updateUser error", error);
         throw error;

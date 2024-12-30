@@ -37,6 +37,7 @@ const userTypeDefs = `#graphql
   }
 
   input UpdateUserInput {
+    picture: String
     firstName: String
     lastName: String
     email: String
