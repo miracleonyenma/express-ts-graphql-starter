@@ -20,6 +20,7 @@ const paginateCollection = async <T>(
   pagination: Pagination,
   options?: {
     filter?: any;
+    populate?: string;
   }
 ): Promise<PaginatedResult<T>> => {
   const { page = 1, limit = 10 } = pagination;
@@ -27,7 +28,8 @@ const paginateCollection = async <T>(
   const data = await collection
     .find(options.filter || {})
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .populate(options.populate || "");
   const total = await collection.countDocuments();
   const pages = Math.ceil(total / limit);
 
