@@ -8,6 +8,7 @@ import {
   verifyRefreshToken,
 } from "../../utils/token.js";
 import { checkUser } from "../../utils/user.js";
+import paginateCollection from "../../utils/paginate.js";
 
 const { sign } = pkg;
 config();
@@ -17,24 +18,9 @@ const userResolvers = {
     users: async (parent, args, context, info) => {
       try {
         const pagination = args.pagination || {};
-        let { page = 1, limit = 10 } = pagination;
-        const skip = (page - 1) * limit;
-        const users = await User.find()
-          .skip(skip)
-          .limit(limit)
-          .populate("roles");
-        const count = await User.countDocuments();
-        const pages = Math.ceil(count / limit);
 
-        return {
-          data: users,
-          meta: {
-            page,
-            limit,
-            pages,
-            total: count,
-          },
-        };
+        const paginatedUsers = await paginateCollection(User, pagination);
+        return paginatedUsers;
       } catch (error) {
         console.log("Query.users error", error);
 
