@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-import { AccessTokenResponse, GoogleUser } from "../types/user";
+import { AccessTokenResponse, GoogleUser } from "../types/user.js";
 config();
 
 const client_id = process.env.GOOGLE_CLIENT_ID;
