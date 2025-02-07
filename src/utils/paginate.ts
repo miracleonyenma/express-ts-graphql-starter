@@ -1,4 +1,4 @@
-import { Model, SortOrder } from "mongoose";
+import { Model, RootFilterQuery, SortOrder } from "mongoose";
 
 interface Pagination {
   page?: number;
@@ -12,6 +12,8 @@ interface PaginatedResult<T> {
     limit: number;
     total: number;
     pages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
   };
 }
 
@@ -30,7 +32,7 @@ const paginateCollection = async <T>(
   collection: Model<T>,
   pagination: Pagination,
   options?: {
-    filter?: any;
+    filter?: RootFilterQuery<T>;
     sort?: SortOptions;
     populate?: string;
   }
@@ -49,6 +51,8 @@ const paginateCollection = async <T>(
 
   const total = await collection.countDocuments(options?.filter || {});
   const pages = Math.ceil(total / limit);
+  const hasNextPage = page < pages;
+  const hasPrevPage = page > 1;
 
   return {
     data,
@@ -57,6 +61,8 @@ const paginateCollection = async <T>(
       limit,
       total,
       pages,
+      hasNextPage,
+      hasPrevPage,
     },
   };
 };
