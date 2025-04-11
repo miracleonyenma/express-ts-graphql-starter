@@ -1,4 +1,4 @@
-import { Model, RootFilterQuery, SortOrder } from "mongoose";
+import { Model, FilterQuery, SortOrder } from "mongoose";
 
 interface Pagination {
   page?: number;
@@ -32,7 +32,7 @@ const paginateCollection = async <T>(
   collection: Model<T>,
   pagination: Pagination,
   options?: {
-    filter?: RootFilterQuery<T>;
+    filter?: FilterQuery<T>;
     sort?: SortOptions;
     populate?: string;
   }
