@@ -162,7 +162,6 @@ class NodemailerProvider implements EmailProviderInterface {
         subject: options.subject,
         html: options.htmlBody,
         text: options.textBody,
-        attachments: options.attachments,
         replyTo: options.replyTo || fromEmail,
       };
 
@@ -182,6 +181,11 @@ class NodemailerProvider implements EmailProviderInterface {
             ? `${recipient.name} <${recipient.email}>`
             : recipient.email
         );
+      }
+
+      // Add attachments if provided
+      if (options.attachments && options.attachments.length > 0) {
+        mailOptions.attachments = options.attachments;
       }
 
       const info = await this.transporter.sendMail(mailOptions);
@@ -260,8 +264,46 @@ class ZeptoMailProvider implements EmailProviderInterface {
 
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
     try {
+      // Define the email payload with TypeScript interface
+      interface ZeptoMailPayload {
+        from: {
+          address: string;
+          name: string;
+        };
+        to: Array<{
+          email_address: {
+            address: string;
+            name: string;
+          };
+        }>;
+        subject: string;
+        htmlbody: string;
+        textbody?: string;
+        cc?: Array<{
+          email_address: {
+            address: string;
+            name: string;
+          };
+        }>;
+        bcc?: Array<{
+          email_address: {
+            address: string;
+            name: string;
+          };
+        }>;
+        reply_to?: {
+          address: string;
+          name: string;
+        };
+        attachments?: Array<{
+          name: string;
+          content: string;
+          mime_type: string;
+        }>;
+      }
+
       // Prepare email payload
-      const emailPayload = {
+      const emailPayload: ZeptoMailPayload = {
         from: {
           address: options.from?.email || this.defaultFromEmail,
           name: options.from?.name || this.defaultFromName,
@@ -319,7 +361,10 @@ class ZeptoMailProvider implements EmailProviderInterface {
       ) {
         emailPayload.attachments = options.attachments.map((attachment) => ({
           name: attachment.filename,
-          content: attachment.content.toString("base64"),
+          content:
+            typeof attachment.content === "string"
+              ? attachment.content
+              : attachment.content.toString("base64"),
           mime_type: attachment.contentType || "application/octet-stream",
         }));
       }
@@ -347,9 +392,26 @@ class ZeptoMailProvider implements EmailProviderInterface {
     emailOptions: EmailOptions
   ): Promise<EmailResult> {
     try {
+      // Define ZeptoMail template payload interface
+      interface ZeptoMailTemplatePayload {
+        from: {
+          address: string;
+          name: string;
+        };
+        to: Array<{
+          email_address: {
+            address: string;
+            name: string;
+          };
+        }>;
+        subject: string;
+        template_key: string;
+        merge_info?: Record<string, any>;
+      }
+
       // If using a template ID
       if (options.templateId) {
-        const response = await this.client.sendMailWithTemplate({
+        const templatePayload: ZeptoMailTemplatePayload = {
           from: {
             address: emailOptions.from?.email || this.defaultFromEmail,
             name: emailOptions.from?.name || this.defaultFromName,
@@ -365,8 +427,14 @@ class ZeptoMailProvider implements EmailProviderInterface {
           ],
           subject: emailOptions.subject,
           template_key: options.templateId,
-          merge_info: options.templateData || {},
-        });
+        };
+
+        if (options.templateData) {
+          templatePayload.merge_info = options.templateData;
+        }
+
+        const response =
+          await this.client.sendMailWithTemplate(templatePayload);
 
         return {
           success: true,
@@ -427,7 +495,24 @@ class ResendProvider implements EmailProviderInterface {
       const fromName = options.from?.name || this.defaultFromName;
       const from = fromName ? `${fromName} <${fromEmail}>` : fromEmail;
 
-      const payload = {
+      // Define Resend email payload interface
+      interface ResendEmailPayload {
+        from: string;
+        to: string[];
+        subject: string;
+        html: string;
+        text?: string;
+        reply_to?: string;
+        cc?: string[];
+        bcc?: string[];
+        attachments?: Array<{
+          filename: string;
+          content: string | Buffer;
+          path?: string;
+        }>;
+      }
+
+      const payload: ResendEmailPayload = {
         from,
         to: [
           options.to.name
@@ -436,9 +521,17 @@ class ResendProvider implements EmailProviderInterface {
         ],
         subject: options.subject,
         html: options.htmlBody,
-        text: options.textBody,
-        reply_to: options.replyTo,
       };
+
+      // Add text body if provided
+      if (options.textBody) {
+        payload.text = options.textBody;
+      }
+
+      // Add reply-to if provided
+      if (options.replyTo) {
+        payload.reply_to = options.replyTo;
+      }
 
       // Add CC if provided
       if (options.cc && options.cc.length > 0) {
@@ -469,9 +562,14 @@ class ResendProvider implements EmailProviderInterface {
 
       const response = await this.client.emails.send(payload);
 
+      // The response type might vary based on Resend's API
+      // Handle it safely with optional chaining
+      const success = Boolean(response && (response as any).id);
+      const messageId = (response as any)?.id || "";
+
       return {
-        success: !!response.id,
-        messageId: response.id || "",
+        success,
+        messageId,
         details: response,
       };
     } catch (error) {
@@ -489,14 +587,34 @@ class ResendProvider implements EmailProviderInterface {
     emailOptions: EmailOptions
   ): Promise<EmailResult> {
     try {
-      if (options.templateId) {
-        // Use Resend template API if available (subject to Resend's API capabilities)
-        // This will need to be adjusted based on Resend's template API
+      if (options.templateContent) {
+        // Use the content directly if provided
+        return await this.sendEmail({
+          ...emailOptions,
+          htmlBody: options.templateContent,
+        });
+      } else if (options.templateId) {
+        // For Resend, we need to check their API documentation
+        // Currently, instead of using template_id directly, we'll use React templates
+        // which appears to be the main approach for Resend
+
+        // Define a proper interface for the React template payload
+        interface ResendReactTemplatePayload {
+          from: string;
+          to: string[];
+          subject: string;
+          react: {
+            template_id: string;
+            props: Record<string, any>;
+          };
+        }
+
         const fromEmail = emailOptions.from?.email || this.defaultFromEmail;
         const fromName = emailOptions.from?.name || this.defaultFromName;
         const from = fromName ? `${fromName} <${fromEmail}>` : fromEmail;
 
-        const payload = {
+        // Create a payload that conforms to Resend's expected format for React templates
+        const payload: ResendReactTemplatePayload = {
           from,
           to: [
             emailOptions.to.name
@@ -504,22 +622,24 @@ class ResendProvider implements EmailProviderInterface {
               : emailOptions.to.email,
           ],
           subject: emailOptions.subject,
-          template: options.templateId,
-          template_data: options.templateData || {},
+          react: {
+            template_id: options.templateId,
+            props: options.templateData || {},
+          },
         };
 
-        const response = await this.client.emails.send(payload);
+        // Send the email with React template
+        const response = await this.client.emails.send(payload as any);
+
+        // Safely access response properties
+        const success = Boolean(response && (response as any).id);
+        const messageId = (response as any)?.id || "";
 
         return {
-          success: !!response.id,
-          messageId: response.id || "",
+          success,
+          messageId,
           details: response,
         };
-      } else if (options.templateContent) {
-        return await this.sendEmail({
-          ...emailOptions,
-          htmlBody: options.templateContent,
-        });
       } else {
         throw new Error(
           "Either templateId or templateContent must be provided"
@@ -830,7 +950,7 @@ class EmailService {
       <p>Hello ${userName},</p>
       <p>We received a request to reset your password. Click the button below to create a new password:</p>
       <div style="text-align: center;">
-        <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #1a74e4; color: white; text-decoration: none; border-radius: 4px; font-weight: 500; margin: 20px 0;">Reset Password</a>
+        <a href="${resetUrl}" style="display: inline-block; padding:12px 24px; background-color: #1a74e4; color: white; text-decoration: none; border-radius: 4px; font-weight: 500; margin: 20px 0;">Reset Password</a>
       </div>
       ${expiryMessage}
       <p>If you didn't request a password reset, you can safely ignore this email.</p>
