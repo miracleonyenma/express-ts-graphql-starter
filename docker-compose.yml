@@ -25,5 +25,7 @@ services:
       - WEBHOOK_SECRET=${WEBHOOK_SECRET}
       - PAY_API_KEY=${PAY_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - DEFAULT_MAIL_PROVIDER=${DEFAULT_MAIL_PROVIDER}
     env_file:
       - .env
