@@ -880,6 +880,138 @@ class EmailService {
   }
 
   /**
+   * Generate a refined minimalist responsive email template with improved buttons and colors
+   * @param options Template options
+   * @returns HTML email template as a string
+   */
+  generateMinimalistTemplate(options: StandardTemplateOptions): string {
+    const {
+      title,
+      content,
+      buttonText,
+      buttonUrl,
+      logoUrl = MAIL_LOGO || "https://via.placeholder.com/48",
+      bannerUrl = null,
+      socialLinks = [],
+      footerText = `© ${new Date().getFullYear()} ${APP_NAME || "All rights reserved."}`,
+      supportEmail = APP_SUPPORT_MAIL || "",
+    } = options;
+
+    // Generate social links HTML if provided
+    const socialLinksHtml =
+      socialLinks.length > 0
+        ? `
+      <div class="social-links" style="margin-top: 20px; text-align: left;">
+        ${socialLinks
+          .map(
+            (link) =>
+              `<a href="${link.url}" target="_blank" style="display: inline-block; margin-right: 12px; color: #94a3b8; text-decoration: none; font-size: 14px;">${link.name}</a>`
+          )
+          .join("")}
+      </div>
+    `
+        : "";
+
+    // Generate banner HTML if provided
+    const bannerHtml = bannerUrl
+      ? `<img src="${bannerUrl}" alt="Email Banner" style="width: 100%; max-width: 600px; height: auto; border-radius: 16px; margin-bottom: 24px;">`
+      : "";
+
+    // Generate button HTML if provided - NOW USING THE HELPER FUNCTION
+    const buttonHtml =
+      buttonText && buttonUrl ? createEmailButton(buttonText, buttonUrl) : "";
+
+    // Generate support email section if provided
+    const supportEmailHtml = supportEmail
+      ? `<p style="margin-bottom: 8px; font-size: 14px;">
+        If you have any questions, please contact us at
+        <a href="mailto:${supportEmail}" style="color: #38bdf8; text-decoration: underline;">${supportEmail}</a>.
+      </p>`
+      : "";
+
+    return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>${title || "Notification"}</title>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #334155; line-height: 1.5; background-color: #f0f9ff;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+      <!-- Header -->
+      <div style="text-align: left; margin-bottom: 32px;">
+        <img src="${logoUrl}" alt="Logo" style="height: 40px; width: auto; border-radius: 8px;">
+      </div>
+      
+      ${bannerHtml}
+      
+      <!-- Main Content -->
+      <div style="background-color: #ffffff; border-radius: 24px; padding: 40px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);">
+        <h2 style="color: #0c4a6e; font-size: 24px; font-weight: 600; margin-top: 0; margin-bottom: 20px;">${title || "Notification"}</h2>
+        
+        ${content}
+        
+        ${buttonHtml}
+      </div>
+      
+      <!-- Footer -->
+      <div style="text-align: left; padding-top: 12px; font-size: 14px; color: #94a3b8;">
+        ${supportEmailHtml}
+        <p style="margin-bottom: 8px;">${footerText}</p>
+        
+        ${socialLinksHtml}
+        
+        <p style="margin-top: 16px;">
+          <a href="#" style="color: #38bdf8; text-decoration: underline; font-size: 14px;">Unsubscribe</a> • 
+          <a href="#" style="color: #38bdf8; text-decoration: underline; font-size: 14px;">Privacy Policy</a>
+        </p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+  }
+
+  /**
+   * Generate a simple minimalist email template with improved styling
+   * @param title The email title
+   * @param content The email content (HTML)
+   * @returns HTML email template as a string
+   */
+  generateSimpleMinimalistTemplate(title: string, content: string): string {
+    return `
+    <div style="text-align: left; padding: 40px; background-color: #ffffff; color: #334155; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.6; border-radius: 24px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);">
+      <!-- Header -->
+      <div style="width: 100%; margin-bottom: 24px;">
+        <div style="width: 48px; height: 48px; display: inline-block; vertical-align: middle; border-radius: 12px; overflow: hidden;">
+          <img src="${MAIL_LOGO || "https://via.placeholder.com/48"}" alt="${APP_NAME || "Logo"}" width="48" height="48" />
+        </div>
+        <span style="margin-left: 8px; font-size: 1.25rem; font-weight: 600; color: #0c4a6e; vertical-align: middle;">
+          ${APP_NAME || "Application"}
+        </span>
+      </div>
+      
+      <!-- Main Content -->
+      <div style="text-align: left; padding-bottom: 24px;">
+        <h1 style="font-size: 22px; color: #0c4a6e; font-weight: 600; margin-top: 0; margin-bottom: 16px;">${title}</h1>
+        ${content}
+      </div>
+
+      <!-- Footer -->
+      <div style="text-align: left; padding-top: 24px; border-top: 1px solid #e0f2fe; color: #94a3b8; font-size: 14px;">
+        <p style="margin-bottom: 8px;">
+          If you have any questions, please contact us at
+          <a href="mailto:${APP_SUPPORT_MAIL || ""}" style="color: #38bdf8; text-decoration: underline;">${APP_SUPPORT_MAIL || "support@example.com"}</a>.
+        </p>
+        <p style="margin-bottom: 0;">&copy; ${new Date().getFullYear()} ${APP_NAME || "Application"}. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+  }
+
+  /**
    * Validate email format using regex
    * @param email The email to validate
    * @returns Whether the email format is valid
@@ -919,7 +1051,7 @@ class EmailService {
       <p>Best regards,<br>The ${APP_NAME || "Application"} Team</p>
     `;
 
-    return this.generateStandardTemplate({
+    return this.generateMinimalistTemplate({
       title: `Welcome to ${APP_NAME || "Our Platform"}!`,
       content,
       socialLinks: [
@@ -949,19 +1081,31 @@ class EmailService {
     const content = `
       <p>Hello ${userName},</p>
       <p>We received a request to reset your password. Click the button below to create a new password:</p>
-      <div style="text-align: center;">
-        <a href="${resetUrl}" style="display: inline-block; padding:12px 24px; background-color: #1a74e4; color: white; text-decoration: none; border-radius: 4px; font-weight: 500; margin: 20px 0;">Reset Password</a>
-      </div>
+      ${createEmailButton("Reset Password", resetUrl)}
       ${expiryMessage}
       <p>If you didn't request a password reset, you can safely ignore this email.</p>
       <p>Best regards,<br>The ${APP_NAME || "Application"} Team</p>
     `;
 
-    return this.generateStandardTemplate({
+    return this.generateMinimalistTemplate({
       title: "Reset Your Password",
       content,
     });
   }
+}
+
+/**
+ * Creates a styled button for use in email content
+ * @param text Button text
+ * @param url Button URL
+ * @returns HTML button as a string
+ */
+function createEmailButton(text: string, url: string): string {
+  return `
+    <div style="text-align: left; margin: 28px 0;">
+      <a href="${url}" style="display: inline-block; padding: 14px 32px; background-color: #0091cf; color: #c1e8ff; text-decoration: none; border-radius: 100px; font-weight: 500; font-size: 15px; box-shadow: 0 2px 4px rgba(56, 189, 248, 0.2); transition: all 0.2s ease-in-out;">${text}</a>
+    </div>
+  `;
 }
 
 // Legacy compatibility functions
@@ -980,13 +1124,14 @@ const mailSender = async (
 
 const generateEmailTemplate = (title: string, content: string): string => {
   const emailService = new EmailService();
-  return emailService.generateSimpleTemplate(title, content);
+  return emailService.generateSimpleMinimalistTemplate(title, content);
 };
 
 export {
   EmailService,
   mailSender,
   generateEmailTemplate,
+  createEmailButton,
   type EmailOptions,
   type TemplateOptions,
   type EmailResult,

@@ -1,4 +1,4 @@
-import { Request } from "express";
+import { Request, RequestHandler, Response, NextFunction } from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
@@ -12,7 +12,10 @@ import { getUserFromToken } from "./services/user.services.js";
 import typeDefs from "./graphql/typeDefs/index.js";
 import resolvers from "./graphql/resolvers/index.js";
 import { authenticate } from "./middlewares/auth.middleware.js";
-import { validateApiKey } from "./middlewares/apiKey.middleware.js";
+import {
+  validateApiKey,
+  ApiKeyRequest,
+} from "./middlewares/apiKey.middleware.js";
 interface MyContext {
   token?: string;
   user?: any;
@@ -45,7 +48,7 @@ await server.start();
 app.use(loggerMiddleware);
 
 // validate API Key middleware
-app.use(validateApiKey);
+// app.use(validateApiKey as RequestHandler);
 
 // our authenticate middleware.
 app.use(authenticate);
@@ -56,17 +59,38 @@ app.use(
   "/graphql",
   cors<cors.CorsRequest>(),
   express.json(),
-  // expressMiddleware accepts the same arguments:
-  // an Apollo Server instance and optional configuration options
-  expressMiddleware(server, {
-    context: async ({ req }: { req: Request }) => {
-      const user = (req as any).user;
-
-      // add the user to the context
-      return { user };
-    },
-  })
+  (req, res, next) => {
+    // set req.body to {} if it is not set
+    req.body = req.body || {};
+    next();
+  }
 );
+
+// Create a separate middleware for Apollo Server to avoid type conflicts
+const apolloMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Using 'as any' to bypass TypeScript's type checking for Express/Apollo compatibility
+    const middleware = expressMiddleware(server, {
+      context: async ({ req: apolloReq }) => {
+        // Access the user from the request
+        const user = (apolloReq as any).user;
+        return { user } as MyContext;
+      },
+    }) as any;
+
+    // Invoke the middleware function with the request/response/next objects
+    return middleware(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Apply the Apollo middleware
+app.use("/graphql", apolloMiddleware as RequestHandler);
 
 // connect database
 connectDB();

@@ -12,7 +12,7 @@ A starter project for setting up a TypeScript Express server with Apollo GraphQL
 - **MongoDB**: Database integration using Mongoose.
 - **Authentication**: JWT-based authentication and Google OAuth.
 - **Role Management**: Role-based access control for users.
-- **Email Services**: Nodemailer integration for sending emails.
+- **Email Services**: Multi-provider email service with Nodemailer, ZeptoMail, and Resend support.
 - **API Key Management**: Secure API key generation and validation.
 - **Password Reset**: Secure password reset functionality.
 - **Environment Configuration**: `.env` file support for managing sensitive configurations.
@@ -63,6 +63,9 @@ A starter project for setting up a TypeScript Express server with Apollo GraphQL
     GOOGLE_CLIENT_ID=your-google-client-id
     GOOGLE_CLIENT_SECRET=your-google-client-secret
     GOOGLE_OAUTH_REDIRECT_URI=http://localhost:4000/auth/google/callback
+    ZOHO_KEY=your-zoho-api-key
+    RESEND_API_KEY=your-resend-api-key
+    DEFAULT_MAIL_PROVIDER=nodemailer
     ```
 
 5. Start the development server:
@@ -88,6 +91,7 @@ express-ts-graphql-starter/
 │   ├── models/                # Mongoose models
 │   ├── services/              # Business logic and service layer
 │   ├── utils/                 # Utility functions (e.g., email, token generation)
+│   │   ├── emails/            # Email service with multiple providers
 │   ├── index.ts               # Entry point of the application
 ├── .env                       # Environment variables
 ├── tsconfig.json              # TypeScript configuration
@@ -154,10 +158,109 @@ express-ts-graphql-starter/
 
 ### 4. **Email Services**
 
-- Email templates and sending logic are implemented in `src/utils/mail.ts`.
-- Used for:
-  - Email verification
-  - Password reset
+The email service module provides a flexible, provider-agnostic way to send emails with support for multiple email providers:
+
+- **Multiple Provider Support**:
+  - Nodemailer (Default) - Traditional SMTP-based email delivery
+  - ZeptoMail - Transactional email API
+  - Resend - Modern email API for developers
+
+- **Email Templates**: Pre-built responsive templates for common use cases like welcome emails and password reset
+
+- **Features**:
+  - Template-based emails
+  - Attachment support
+  - CC/BCC functionality
+  - Reply-to settings
+  - Type-safe interfaces
+  - Error handling
+  - Social media links
+  - Button actions
+
+#### Basic Usage
+
+```typescript
+import { EmailService } from './src/utils/emails';
+
+// Create email service with preferred provider
+const emailService = new EmailService('resend'); // or 'nodemailer' or 'zeptomail'
+
+// Send a simple email
+await emailService.sendEmail({
+  subject: 'Welcome to our service',
+  htmlBody: '<h1>Hello there!</h1><p>Welcome to our platform.</p>',
+  to: {
+    email: 'user@example.com',
+    name: 'John Doe'
+  }
+});
+```
+
+#### Using Templates
+
+```typescript
+import { EmailService } from './src/utils/emails';
+
+const emailService = new EmailService();
+
+// Generate standard template
+const template = emailService.generateStandardTemplate({
+  title: 'Welcome to Our Platform',
+  content: '<p>Thank you for signing up! We hope you enjoy using our service.</p>',
+  buttonText: 'Get Started',
+  buttonUrl: 'https://example.com/dashboard',
+  socialLinks: [
+    { name: 'Twitter', url: 'https://twitter.com/example' },
+    { name: 'Instagram', url: 'https://instagram.com/example' }
+  ]
+});
+
+// Send email with template
+await emailService.sendEmail({
+  subject: 'Welcome to Our Platform',
+  htmlBody: template,
+  to: {
+    email: 'user@example.com',
+    name: 'John Doe'
+  }
+});
+```
+
+#### Pre-made Email Templates
+
+```typescript
+import { EmailService } from './src/utils/emails';
+
+const emailService = new EmailService();
+
+// Send welcome email
+const welcomeTemplate = emailService.generateWelcomeEmail({
+  userName: 'John',
+  verificationUrl: 'https://example.com/verify?token=abc123',
+  additionalContent: '<p>Here are some tips to get started...</p>'
+});
+
+// Send password reset email
+const resetTemplate = emailService.generatePasswordResetEmail({
+  userName: 'Jane',
+  resetUrl: 'https://example.com/reset?token=xyz789',
+  expiryTime: '24 hours'
+});
+```
+
+#### Legacy Support
+
+```typescript
+import { mailSender, generateEmailTemplate } from './src/utils/emails';
+
+// Your existing code will continue to work
+const emailBody = generateEmailTemplate(
+  'Welcome',
+  '<p>Thank you for signing up!</p>'
+);
+
+await mailSender('user@example.com', 'Welcome', emailBody);
+```
 
 ### 5. **API Key Management**
 
@@ -186,6 +289,9 @@ express-ts-graphql-starter/
 | `GOOGLE_CLIENT_ID`        | Google OAuth client ID                       |
 | `GOOGLE_CLIENT_SECRET`    | Google OAuth client secret                   |
 | `GOOGLE_OAUTH_REDIRECT_URI` | Redirect URI for Google OAuth              |
+| `ZOHO_KEY`                | ZeptoMail API key for email service          |
+| `RESEND_API_KEY`          | Resend API key for email service             |
+| `DEFAULT_MAIL_PROVIDER`   | Default email provider to use ('nodemailer', 'zeptomail', or 'resend') |
 
 ---
 
@@ -247,6 +353,8 @@ This project is licensed under the MIT License.
 
 3. **Email Sending Issues**:
    - Verify your email credentials and ensure less secure app access is enabled for your email account.
+   - For Gmail, you may need to generate an "App Password" if 2FA is enabled.
+   - Check that the correct email provider is configured (DEFAULT_MAIL_PROVIDER).
 
 ---
 
@@ -256,3 +364,5 @@ This project is licensed under the MIT License.
 - Implement rate limiting for API endpoints.
 - Add support for more OAuth providers.
 - Improve error handling and logging.
+- Add more email templates for different scenarios.
+- Support for AWS SES as an additional email provider.
