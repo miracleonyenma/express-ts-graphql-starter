@@ -26,7 +26,7 @@ const sendVerificationMail = async (
     `;
 
     // Use the standard template for a consistent look and feel
-    const emailBody = emailService.generateStandardTemplate({
+    const emailBody = emailService.generateMinimalistTemplate({
       title: "Email Verification",
       content,
     });
