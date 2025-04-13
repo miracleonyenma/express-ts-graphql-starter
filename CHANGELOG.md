@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## 1.1.0 (2025-04-13)
 
-
 ### Features
 
 * add dependabot configuration for automated npm dependency updates ([6e11255](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/6e112554fe53750919bfa4ec2910d3a9ea4f345a))
@@ -23,18 +22,15 @@ All notable changes to this project will be documented in this file. See [standa
 * update .env.example and README.md with environment variable configurations and project structure ([1ed1914](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/1ed19140dc8327df3628a7a8259f7d009e59fed2))
 * update token utility to use SignOptions for token duration parameters ([5b6d9ab](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/5b6d9ab7a493832f0583e64cc3e7d6eb031bb791))
 
-
 ### Bug Fixes
 
 * Add password reset mutation to resolvers ([56f6dc9](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/56f6dc984d6e09c328e246796642256db0f03b6f))
 * get user from token and pass to context ([863e310](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/863e310afe20b227e283827adc49ad107f4db2f4))
 
-
 ### Code Refactoring
 
 * Improve mail logo styling in email template ([ec6e19f](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/ec6e19f331158d5b77325f8ecb0719c6d4d98ee0))
 * Update Dockerfile and docker-compose.yml ([e19cda3](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/e19cda3dcd942f666f4952b31d62657f79c270ff))
-
 
 ### Chores
 
@@ -55,7 +51,3 @@ All notable changes to this project will be documented in this file. See [standa
 * update package.json dependencies and devDependencies to latest versions; fix filter type in paginate utility ([a4a39dd](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/a4a39dd53a85dbb2cbbdbd38bb7a8a4ad4e6e919))
 * Update role model and user typeDefs ([fd51836](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/fd51836e48d918dabe8673c920fa90af2a33ce32))
 * update TypeScript configuration and dependencies to latest versions ([a07dd0b](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/a07dd0b4fe04d83f4a64e70cbe2f79b7ed148ea1))
-
-# Changelog
-
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
