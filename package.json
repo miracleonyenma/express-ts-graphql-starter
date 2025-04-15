@@ -11,8 +11,7 @@
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major",
     "release:patch": "standard-version --release-as patch",
-    "commit": "cz",
-    "prepare": "husky"
+    "commit": "cz"
   },
   "config": {
     "commitizen": {
