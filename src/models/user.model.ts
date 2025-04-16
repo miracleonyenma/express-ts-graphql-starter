@@ -196,33 +196,61 @@ userSchema.statics.upsertGoogleUser = async function ({
   verified_email: boolean;
 }) {
   try {
+    // First, check if user exists
+    const existingUser = await this.findOne({ email });
+
     const userRole = await Role.findOne({ name: "user" });
-    const user = await this.findOneAndUpdate(
-      { email },
-      {
+
+    if (existingUser) {
+      // User exists - update only necessary fields
+      // Note: We're not updating firstName and lastName if they already exist
+      const updates: any = {};
+
+      // Only update email verification status if not already verified
+      if (!existingUser.emailVerified && verified_email) {
+        updates.emailVerified = verified_email;
+      }
+
+      // Only update picture if provided and different
+      if (
+        picture &&
+        (!existingUser.picture || existingUser.picture !== picture)
+      ) {
+        updates.picture = picture;
+      }
+
+      // Only update roles if empty
+      if (existingUser.roles.length === 0) {
+        updates.roles = [userRole._id];
+      }
+
+      // If we have updates to make
+      if (Object.keys(updates).length > 0) {
+        const updatedUser = await this.findOneAndUpdate(
+          { email },
+          { $set: updates },
+          { new: true }
+        );
+        return await updatedUser.populate("roles");
+      }
+
+      // If no updates needed, just return the populated existing user
+      return await existingUser.populate("roles");
+    } else {
+      // Create new user
+      const newUser = await this.create({
         firstName,
         lastName,
         email,
         picture,
         emailVerified: verified_email,
         roles: [userRole._id],
-      },
-      { new: true, upsert: true }
-    );
+      });
 
-    console.log("👤👤👤👤👤 ~ user", user);
-
-    // assign user role
-    // await assignRoleToUser(user._id.toString(), "user");
-    // const userWithRoles = await user.populate("roles");
-
-    const userWithRoles = await user.populate("roles");
-    console.log("👤👤👤👤👤 ~ userWithRoles", userWithRoles);
-
-    return userWithRoles;
+      return await newUser.populate("roles");
+    }
   } catch (error) {
     console.log("👤👤👤👤👤 ~ error", error);
-
     throw new Error(error.message);
   }
 };
