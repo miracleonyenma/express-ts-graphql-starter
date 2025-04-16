@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.1.0...v1.1.1) (2025-04-16)
+
+
+### Bug Fixes
+
+* re enable validate API Key middleware in server setup ([f41f688](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/f41f688a9370a099e2dbd2606a5b93e001ce2a4d))
+* update email template generation to use minimalist design for verification emails ([aaa1fc6](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/aaa1fc65ee6f7a708809d13fbeb21358a6debd81))
+
+
+### Chores
+
+* add RESEND_API_KEY and DEFAULT_MAIL_PROVIDER to docker-compose environment variables ([6f1648c](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/6f1648cf8639d1d567f09288340b08454593da80))
+* clean up changelog by removing redundant sections ([260817a](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/260817a8b09b10e8f09813ff6d748985b90b591e))
+* remove husky commit-msg hook and update .gitignore to include .husky directory ([31aba20](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/31aba200f345c7c2d3beb45e15d6d9ef8ff71b42))
+* update .gitignore to include .husky directory and remove commit-msg hook ([fb95dae](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/fb95dae41f7d3b0ad7a9cda5706b87a5581d83d5))
+* update .gitignore to remove .husky directory and add commit-msg hook for linting ([d527fdd](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/d527fdde34583c7fe3ae92a49f37c08b7b67ca69))
+* update package name and main entry point in package.json ([7414701](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/7414701807e74bc26c98f62a88a232149fad71c7))
+
+
+### Code Refactoring
+
+* **user.model:** optimize upsertGoogleUser method ([0259a45](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/0259a4517fb3887efedce0edd4f31c4b7c32754f))
+
 ## 1.1.0 (2025-04-13)
 
 ### Features
