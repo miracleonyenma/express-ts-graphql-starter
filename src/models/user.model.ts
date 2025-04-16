@@ -211,11 +211,8 @@ userSchema.statics.upsertGoogleUser = async function ({
         updates.emailVerified = verified_email;
       }
 
-      // Only update picture if provided and different
-      if (
-        picture &&
-        (!existingUser.picture || existingUser.picture !== picture)
-      ) {
+      // Only update picture if theres no existing picture
+      if (picture && !existingUser.picture) {
         updates.picture = picture;
       }
 
