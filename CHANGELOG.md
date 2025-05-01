@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.1.1...v1.2.0) (2025-05-01)
+
+
+### Features
+
+* add global error handling and 404 middleware ([7ca69a4](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/7ca69a4e390c10facdf389c0728c31eea6dab83b))
+* enhance user model and resolvers with error handling, pagination, and new fields ([722d2d0](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/722d2d0dae35204c56133fa7a7260974e14b8d2f))
+
+
+### Code Refactoring
+
+* **user.model.ts:** simplify picture update logic in upsertGoogleUser ([5f38d10](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/5f38d1045dda69999dadac05c72644dc64403512))
+
+
+### Chores
+
+* **deps-dev:** bump the development-dependencies group with 2 updates ([8ca079d](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/8ca079db8301fabfc2ffea2ea0df2bdaf316fe4a))
+* **deps:** bump resend in the production-dependencies group ([d477258](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/d477258dec85b66f215ed4d8b5d809f29105b43b))
+* **deps:** bump the production-dependencies group with 4 updates ([3f19dff](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/3f19dff846bb9874fef1267546d2ed6f788a470e))
+
 ### [1.1.1](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.1.0...v1.1.1) (2025-04-16)
 
 
