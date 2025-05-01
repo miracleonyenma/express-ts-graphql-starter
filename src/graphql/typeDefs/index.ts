@@ -18,7 +18,20 @@ const globalTypeDefs = `#graphql
     limit: Int
     pages: Int
     total: Int
+    hasNextPage: Boolean
+    hasPrevPage: Boolean
   }
+
+  input SortInput {
+    by: String
+    direction: SortDirection
+  }
+
+  enum SortDirection {
+    asc
+    desc
+  }
+
 `;
 
 const typeDefs = `

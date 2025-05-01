@@ -1,6 +1,6 @@
-import mongoose, { Document, Model, mongo, ObjectId, Types } from "mongoose";
+import mongoose, { Document, Model, Types } from "mongoose";
 
-type AccessTokenResponse = {
+export type AccessTokenResponse = {
   access_token: string;
   expires_in: number;
   refresh_token: string;
@@ -11,7 +11,7 @@ type AccessTokenResponse = {
   error_description?: string;
 };
 
-type GoogleUser = {
+export type GoogleUser = {
   id: string;
   email: string;
   verified_email: boolean;
@@ -22,7 +22,7 @@ type GoogleUser = {
   locale: string;
 };
 
-type User = {
+export interface User {
   firstName: string;
   lastName: string;
   email: string;
@@ -30,12 +30,14 @@ type User = {
   count?: number;
   password?: string;
   emailVerified?: boolean;
+  phone?: string;
+  phoneVerified?: boolean;
   roles?: Types.ObjectId[];
   createdAt?: Date;
   updatedAt?: Date;
-};
+}
 
-type UpsertInput = {
+export type UpsertInput = {
   email: string;
   firstName: string;
   lastName: string;
@@ -43,25 +45,36 @@ type UpsertInput = {
   verified_email: boolean;
 };
 
-type UserDocument = User & Document;
-
-type UserModel = Model<UserDocument> & {
-  registerUser(data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-  }): Promise<UserDocument>;
-  loginUser(data: { email: string; password: string }): Promise<UserDocument>;
-  me(data: { id: string }): Promise<UserDocument>;
-  editUser(data: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  }): Promise<UserDocument>;
-  upsertGoogleUser(data: UpsertInput): Promise<UserDocument>;
-  upsertGithubUser(data: UpsertInput): Promise<UserDocument>;
+export type RegisterUserInput = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  password: string;
 };
 
-export { AccessTokenResponse, GoogleUser, User, UserDocument, UserModel };
+export type EditUserInput = {
+  id: string;
+  data: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    picture?: string;
+    roles?: string[];
+  };
+};
+
+export interface UserDocument extends User, Document {}
+
+// Static methods interface
+export interface UserStaticMethods {
+  registerUser(data: RegisterUserInput): Promise<UserDocument>;
+  loginUser(data: { email: string; password: string }): Promise<UserDocument>;
+  me(data: { id: string }): Promise<UserDocument>;
+  editUser(data: EditUserInput): Promise<UserDocument>;
+  upsertGoogleUser(data: UpsertInput): Promise<UserDocument>;
+  upsertGithubUser(data: UpsertInput): Promise<UserDocument>;
+}
+
+// Combine the Model and static methods
+export interface UserModel extends Model<UserDocument>, UserStaticMethods {}

@@ -1,28 +1,25 @@
+// ./src/models/user.model.ts
+
 import mongoose, { model, Schema } from "mongoose";
 import { genSalt, hash, compare } from "bcrypt";
-import { object, string } from "yup";
+import { array, object, string } from "yup";
 import { assignRoleToUser } from "../services/user.services.js";
 import Role from "./role.model.js";
 
 import { initOTPGeneration } from "../services/otp.services.js";
-import { UserDocument, UserModel } from "../types/user.js";
-
-type User = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  picture: string;
-  count: number;
-  password: string;
-  emailVerified: boolean;
-  roles: string[];
-};
+import {
+  EditUserInput,
+  RegisterUserInput,
+  UserDocument,
+  UserModel,
+} from "../types/user.js";
 
 const registerUserSchema = object({
   firstName: string().trim().min(2).required(),
   lastName: string().trim().min(3).required(),
   email: string().email().required(),
   password: string().min(6).required(),
+  phone: string().min(10).optional(),
 });
 
 const loginUserSchema = object({
@@ -33,7 +30,9 @@ const loginUserSchema = object({
 const editUserSchema = object({
   firstName: string().trim().min(2).required(),
   lastName: string().trim().min(3).required(),
-  email: string().email().required(),
+  phone: string().min(10).optional(),
+  picture: string().optional(),
+  roles: array().of(string()).optional(),
 });
 
 const userSchema = new mongoose.Schema<UserDocument, UserModel>(
@@ -49,6 +48,11 @@ const userSchema = new mongoose.Schema<UserDocument, UserModel>(
     email: {
       type: String,
       required: true,
+    },
+    phone: String,
+    phoneVerified: {
+      type: Boolean,
+      default: false,
     },
     picture: {
       type: String,
@@ -78,12 +82,7 @@ const userSchema = new mongoose.Schema<UserDocument, UserModel>(
   }
 );
 
-userSchema.statics.registerUser = async function (data: {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}) {
+userSchema.statics.registerUser = async function (data: RegisterUserInput) {
   try {
     // validate user input
     await registerUserSchema.validate(data);
@@ -152,31 +151,17 @@ userSchema.statics.me = async function ({ id }: { id: string }) {
   }
 };
 
-userSchema.statics.editUser = async function ({
-  id,
-  firstName,
-  lastName,
-  email,
-}: {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-}) {
+userSchema.statics.editUser = async function ({ id, data }: EditUserInput) {
   try {
     // validate user input
-    await editUserSchema.validate({ firstName, lastName, email });
+    await editUserSchema.validate(data);
     // check if user exists
     const user = await this.findById(id);
     if (!user) {
       throw new Error("User does not exist");
     }
     // update user
-    return this.findByIdAndUpdate(
-      id,
-      { firstName, lastName, email },
-      { new: true }
-    );
+    return this.findByIdAndUpdate(id, { ...data }, { new: true });
   } catch (error) {
     throw new Error(error);
   }

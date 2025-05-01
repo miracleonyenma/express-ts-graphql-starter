@@ -6,6 +6,8 @@ const userTypeDefs = `#graphql
     picture: String
     email: String
     emailVerified: Boolean
+    phone: String
+    phoneVerified: Boolean
     roles: [Role]
   }
 
@@ -28,6 +30,7 @@ const userTypeDefs = `#graphql
     firstName: String!
     lastName: String!
     email: String!
+    phone: String
     password: String!
   }
 
@@ -41,15 +44,23 @@ const userTypeDefs = `#graphql
     firstName: String
     lastName: String
     email: String
+    phone: String
   }
 
   type RefreshPayload {
     accessToken: String!
   }
 
+  input UserFiltersInput {
+    search: String
+    role: ID
+    emailVerified: Boolean
+  }
+
+
 
   type Query {
-    users(pagination: Pagination): UserData
+    users(pagination: Pagination, filters: UserFiltersInput, sort: SortInput): UserData
     user(id: ID!): User
     me: User
   }
