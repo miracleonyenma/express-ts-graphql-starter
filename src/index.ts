@@ -1,3 +1,5 @@
+// ./src/index.ts
+
 import { Request, RequestHandler, Response, NextFunction } from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -8,7 +10,6 @@ import cors from "cors";
 import { config } from "dotenv";
 import connectDB from "./config/db.js";
 import loggerMiddleware from "./middlewares/logger.middleware.js";
-import { getUserFromToken } from "./services/user.services.js";
 import typeDefs from "./graphql/typeDefs/index.js";
 import resolvers from "./graphql/resolvers/index.js";
 import { authenticate } from "./middlewares/auth.middleware.js";
@@ -16,6 +17,11 @@ import {
   validateApiKey,
   ApiKeyRequest,
 } from "./middlewares/apiKey.middleware.js";
+import {
+  errorMiddleware,
+  notFoundMiddleware,
+} from "./middlewares/error.middleware.js";
+import { ApiError } from "./services/error.services.js";
 interface MyContext {
   token?: string;
   user?: any;
@@ -91,6 +97,24 @@ const apolloMiddleware = async (
 
 // Apply the Apollo middleware
 app.use("/graphql", apolloMiddleware as RequestHandler);
+
+// // API routes
+// app.use('/api/v1', routes);
+
+// health check
+app.get("/health", (req, res) => {
+  res.send("OK");
+});
+
+// Handle 404 errors for any other routes
+app.use(notFoundMiddleware);
+
+// Global error handler - must be last
+app.use(
+  (err: Error | ApiError, req: Request, res: Response, next: NextFunction) => {
+    errorMiddleware(err, req, res, next);
+  }
+);
 
 // connect database
 connectDB();
