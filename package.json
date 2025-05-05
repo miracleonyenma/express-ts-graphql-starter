@@ -42,7 +42,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.1",
     "nanoid": "^5.1.5",
-    "nodemailer": "^6.10.1",
+    "nodemailer": "^7.0.2",
     "otp-generator": "^4.0.1",
     "resend": "^4.4.1",
     "yup": "^1.6.1",
