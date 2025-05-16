@@ -1,8 +1,3 @@
-import mongoose, { Schema } from "mongoose";
-import { genSalt, hash, compare } from "bcrypt";
-import { object, string } from "yup";
-import otpGenerator from "otp-generator";
-import { assignRoleToUser } from "../../services/user.services.js";
 import OTP from "../../models/otp.model.js";
 import User from "../../models/user.model.js";
 import { initOTPGeneration } from "../../services/otp.services.js";

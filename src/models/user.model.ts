@@ -3,7 +3,6 @@
 import mongoose, { model, Schema } from "mongoose";
 import { genSalt, hash, compare } from "bcrypt";
 import { array, object, string } from "yup";
-import { assignRoleToUser } from "../services/user.services.js";
 import Role from "./role.model.js";
 
 import { initOTPGeneration } from "../services/otp.services.js";
@@ -13,6 +12,7 @@ import {
   UserDocument,
   UserModel,
 } from "../types/user.js";
+import { UserService } from "../services/user.services.js";
 
 const registerUserSchema = object({
   firstName: string().trim().min(2).required(),
@@ -34,6 +34,8 @@ const editUserSchema = object({
   picture: string().optional(),
   roles: array().of(string()).optional(),
 });
+
+const userService = new UserService({});
 
 const userSchema = new mongoose.Schema<UserDocument, UserModel>(
   {
@@ -100,7 +102,7 @@ userSchema.statics.registerUser = async function (data: RegisterUserInput) {
       password: hashedPassword,
     });
     // assign user role
-    await assignRoleToUser(user._id.toString(), "user");
+    await userService.assignRoleToUser(user._id.toString(), "user");
     const userWithRoles = await this.findById(user._id).populate("roles");
 
     // send verification email

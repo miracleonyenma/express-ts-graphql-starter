@@ -293,36 +293,39 @@ export class UserService {
 
     return populatedRoles;
   }
+
+  /**
+   * Get user from JWT token
+   */
+  async getUserFromToken(token: string): Promise<UserDocument | null> {
+    try {
+      if (!token) {
+        return null;
+      }
+      const data = verify(token, JWT_SECRET) as JwtPayload;
+      const user = await User.findById(data.data.id).populate("roles");
+      return user;
+    } catch (error) {
+      logger.error("getUserFromToken error:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Assign a role to a user by role name
+   */
+  async assignRoleToUser(userId: string, roleName: string): Promise<void> {
+    const user = await User.findById(userId);
+    const role = await Role.findOne({ name: roleName });
+
+    if (user && role) {
+      user.roles.push(role._id);
+      await user.save();
+      logger.info(`Role ${roleName} assigned to user ${user.firstName}.`);
+    } else {
+      throw new NotFoundError("User or Role not found");
+    }
+  }
 }
 
 export default new UserService({});
-
-const getUserFromToken = async (token: string) => {
-  try {
-    if (!token) {
-      return null;
-    }
-    const data = verify(token, JWT_SECRET) as JwtPayload;
-    const user = await User.findById(data.data.id).populate("roles");
-    return user;
-  } catch (error) {
-    console.log("getUserFromToken error:", error);
-
-    return null;
-  }
-};
-
-const assignRoleToUser = async (userId: string, roleName: string) => {
-  const user = await User.findById(userId);
-  const role = await Role.findOne({ name: roleName });
-
-  if (user && role) {
-    user.roles.push(role._id);
-    await user.save();
-    console.log(`Role ${roleName} assigned to user ${user.firstName}.`);
-  } else {
-    console.log("User or Role not found.");
-  }
-};
-
-export { getUserFromToken, assignRoleToUser };

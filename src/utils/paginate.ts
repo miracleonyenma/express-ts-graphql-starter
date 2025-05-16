@@ -1,11 +1,11 @@
 import { Model, FilterQuery, SortOrder } from "mongoose";
 
-interface Pagination {
+export interface Pagination {
   page?: number;
   limit?: number;
 }
 
-interface PaginatedResult<T> {
+export interface PaginatedResult<T> {
   data: T[];
   meta: {
     page: number;
@@ -17,8 +17,8 @@ interface PaginatedResult<T> {
   };
 }
 
-interface SortOptions {
-  by?: "createdAt" | "updatedAt";
+export interface SortOptions {
+  by?: "createdAt" | "updatedAt" | "name";
   direction?: "asc" | "desc";
 }
 
