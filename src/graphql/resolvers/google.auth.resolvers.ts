@@ -1,3 +1,5 @@
+// ./src/graphql/resolvers/google.auth.resolvers.ts
+
 import {
   getGoogleOAuthTokens,
   getGoogleUser,
@@ -14,11 +16,12 @@ const googleAuthResolvers = {
     googleAuth: async (parent, args, context, info) => {
       try {
         const code = args?.code;
+        const redirect_uri = args?.redirect_uri;
 
         if (!code) {
           throw new Error("Invalid code");
         }
-        const authTokens = await getGoogleOAuthTokens({ code });
+        const authTokens = await getGoogleOAuthTokens({ code, redirect_uri });
 
         if (authTokens.error) {
           throw new Error(authTokens.error);

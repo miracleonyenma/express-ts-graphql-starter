@@ -8,14 +8,17 @@ const redirect_uri = process.env.GOOGLE_OAUTH_REDIRECT_URI;
 
 const getGoogleOAuthTokens: (args: {
   code: string;
-}) => Promise<AccessTokenResponse> = async ({ code }: { code: string }) => {
+  redirect_uri?: string;
+}) => Promise<AccessTokenResponse> = async (args) => {
   const URL = "https://oauth2.googleapis.com/token";
 
   const values = {
-    code,
+    code: args.code,
     client_id,
     client_secret,
-    redirect_uri,
+    ...(args?.redirect_uri
+      ? { redirect_uri: args.redirect_uri }
+      : { redirect_uri }),
     grant_type: "authorization_code",
   };
 
