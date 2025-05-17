@@ -1,4 +1,4 @@
-// src/services/user.services.ts
+// src/services/user.services.ts (Updated with consistent admin authorization)
 
 import pkg, { JwtPayload } from "jsonwebtoken";
 import { config } from "dotenv";
@@ -6,7 +6,7 @@ import Role from "../models/role.model.js";
 
 import { Types } from "mongoose";
 import User from "../models/user.model.js";
-import { UserDocument } from "../types/user.js";
+import { User as UserType, UserDocument } from "../types/user.js";
 import paginateCollection, {
   Pagination,
   SortOptions,
@@ -78,6 +78,7 @@ export class UserService {
 
   /**
    * Get users with filtering, pagination, and sorting options
+   * Only admins should be able to view all users
    */
   async getFilteredUsers({
     filters = {},
@@ -89,7 +90,17 @@ export class UserService {
     sort?: SortOptions;
   }) {
     // Check user authentication
+    if (!this.userId) {
+      throw new UnauthorizedError("Authentication required");
+    }
+
     await checkUser(this.userId);
+
+    // Only admins should be able to get filtered users
+    const userIsAdmin = await checkUserIsAdmin(this.userId);
+    if (!userIsAdmin) {
+      throw new UnauthorizedError("Only administrators can view all users");
+    }
 
     // Build filter object for MongoDB query
     const constructedFilters = UserFilters({ filters });
@@ -112,8 +123,25 @@ export class UserService {
 
   /**
    * Get user by ID
+   * Only admins can view other users' profiles
    */
   async getUserById(id: string): Promise<UserDocument> {
+    // Check user authentication
+    if (!this.userId) {
+      throw new UnauthorizedError("Authentication required");
+    }
+
+    // If user is requesting their own profile, allow it
+    // Otherwise, check if user is admin
+    if (id !== this.userId) {
+      const userIsAdmin = await checkUserIsAdmin(this.userId);
+      if (!userIsAdmin) {
+        throw new UnauthorizedError(
+          "Only administrators can view other users' profiles"
+        );
+      }
+    }
+
     const user = await User.findById(id).populate("roles");
 
     if (!user) {
@@ -228,27 +256,50 @@ export class UserService {
 
   /**
    * Update user profile
+   * Ensures only admins can modify other users' data
    */
-  async updateUser(
-    updateData: Partial<{
-      firstName: string;
-      lastName: string;
-      email: string;
-      picture: string;
-    }>
-  ): Promise<UserDocument> {
+  async updateUser({
+    id,
+    updateData,
+  }: {
+    id?: string;
+    updateData: Partial<UserType>;
+  }): Promise<UserDocument> {
+    // Check if user is authenticated
     if (!this.userId) {
       throw new UnauthorizedError("Authentication required");
     }
 
-    // Verify user exists
+    // Verify current user exists
     await checkUser(this.userId);
 
+    // Validate update data
     if (!updateData || Object.keys(updateData).length === 0) {
       throw new BadRequestError("No update data provided");
     }
 
-    const updatedUser = await User.findByIdAndUpdate(this.userId, updateData, {
+    // Check if user is an admin
+    const userIsAdmin = await checkUserIsAdmin(this.userId);
+
+    // Determine which user to update
+    let targetUserId: string;
+
+    // Case 1: Updating another user (requires admin)
+    if (id && id !== this.userId) {
+      if (!userIsAdmin) {
+        throw new UnauthorizedError(
+          "Only administrators can modify other users' data"
+        );
+      }
+      targetUserId = id;
+    }
+    // Case 2: Self-update or admin updating user (explicitly or implicitly)
+    else {
+      targetUserId = id || this.userId;
+    }
+
+    // Perform the update
+    const updatedUser = await User.findByIdAndUpdate(targetUserId, updateData, {
       new: true,
       runValidators: true,
     });
@@ -262,18 +313,31 @@ export class UserService {
 
   /**
    * Delete a user
+   * Only admins can delete other users
    */
   async deleteUser(id?: string): Promise<UserDocument> {
-    const userId = id || this.userId;
-
-    if (!userId) {
-      throw new UnauthorizedError("User ID required");
+    // Check user authentication
+    if (!this.userId) {
+      throw new UnauthorizedError("Authentication required");
     }
 
-    const deletedUser = await User.findByIdAndDelete(userId);
+    // Determine target user ID
+    const targetUserId = id || this.userId;
+
+    // If deleting another user, check admin privileges
+    if (targetUserId !== this.userId) {
+      const userIsAdmin = await checkUserIsAdmin(this.userId);
+      if (!userIsAdmin) {
+        throw new UnauthorizedError(
+          "Only administrators can delete other users"
+        );
+      }
+    }
+
+    const deletedUser = await User.findByIdAndDelete(targetUserId);
 
     if (!deletedUser) {
-      throw new NotFoundError(`User with ID ${userId} not found`);
+      throw new NotFoundError(`User with ID ${targetUserId} not found`);
     }
 
     return deletedUser;
@@ -313,8 +377,20 @@ export class UserService {
 
   /**
    * Assign a role to a user by role name
+   * Only admins can assign roles
    */
   async assignRoleToUser(userId: string, roleName: string): Promise<void> {
+    // Check user authentication
+    if (!this.userId) {
+      throw new UnauthorizedError("Authentication required");
+    }
+
+    // Only admins can assign roles
+    const userIsAdmin = await checkUserIsAdmin(this.userId);
+    if (!userIsAdmin) {
+      throw new UnauthorizedError("Only administrators can assign roles");
+    }
+
     const user = await User.findById(userId);
     const role = await Role.findOne({ name: roleName });
 
