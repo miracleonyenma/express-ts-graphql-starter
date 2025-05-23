@@ -9,6 +9,8 @@ const userTypeDefs = `#graphql
     phone: String
     phoneVerified: Boolean
     roles: [Role]
+    createdAt: String
+    updatedAt: String
   }
 
   type UserData {

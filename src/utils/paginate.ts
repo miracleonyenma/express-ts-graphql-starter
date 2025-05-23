@@ -1,4 +1,5 @@
-import { Model, FilterQuery, SortOrder } from "mongoose";
+// ./src/utils/paginate.ts
+import { Model, FilterQuery, SortOrder, PopulateOptions } from "mongoose";
 
 export interface Pagination {
   page?: number;
@@ -17,15 +18,21 @@ export interface PaginatedResult<T> {
   };
 }
 
-export interface SortOptions {
-  by?: "createdAt" | "updatedAt" | "name";
+export interface SortOptions<T = any> {
+  by?: keyof T | string;
   direction?: "asc" | "desc";
 }
 
-const getSort = (sort?: SortOptions): { [key: string]: SortOrder } => {
+// Corrected PopulateType to match Mongoose's expected types
+export type PopulateType =
+  | string
+  | PopulateOptions
+  | (string | PopulateOptions)[];
+
+const getSort = <T>(sort?: SortOptions<T>): { [key: string]: SortOrder } => {
   if (!sort) return { createdAt: -1 }; // Default to sorting by `createdAt` in descending order
   const { by = "createdAt", direction = "desc" } = sort;
-  return { [by]: direction === "asc" ? 1 : -1 };
+  return { [by.toString()]: direction === "asc" ? 1 : -1 };
 };
 
 const paginateCollection = async <T>(
@@ -33,8 +40,8 @@ const paginateCollection = async <T>(
   pagination: Pagination,
   options?: {
     filter?: FilterQuery<T>;
-    sort?: SortOptions;
-    populate?: string;
+    sort?: SortOptions<T>;
+    populate?: PopulateType;
   }
 ): Promise<PaginatedResult<T>> => {
   const { page = 1, limit = 10 } = pagination;
@@ -42,12 +49,24 @@ const paginateCollection = async <T>(
 
   const sort = getSort(options?.sort);
 
-  const data = await collection
+  // Create the base query
+  let query = collection
     .find(options?.filter || {})
     .skip(skip)
     .limit(limit)
-    .populate(options?.populate || "")
     .sort(sort);
+
+  // Apply population if provided
+  if (options?.populate) {
+    const populateArg =
+      typeof options.populate === "string"
+        ? [options.populate]
+        : options.populate;
+    query = query.populate(populateArg);
+  }
+
+  // Execute the query
+  const data = await query;
 
   const total = await collection.countDocuments(options?.filter || {});
   const pages = Math.ceil(total / limit);
