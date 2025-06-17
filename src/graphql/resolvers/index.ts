@@ -6,6 +6,9 @@ import roleResolvers from "./role.resolvers.js";
 import userResolvers from "./user.resolvers.js";
 
 const resolvers = {
+  User: {
+    ...userResolvers.User,
+  },
   Query: {
     ...userResolvers.Query,
     ...roleResolvers.Query,

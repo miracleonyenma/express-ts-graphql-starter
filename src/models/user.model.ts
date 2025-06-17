@@ -102,7 +102,7 @@ userSchema.statics.registerUser = async function (data: RegisterUserInput) {
       password: hashedPassword,
     });
     // assign user role
-    await userService.assignRoleToUser(user._id.toString(), "user");
+    await userService.assignRoleToUser(user._id.toString(), "user", true);
     const userWithRoles = await this.findById(user._id).populate("roles");
 
     // send verification email

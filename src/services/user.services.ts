@@ -191,6 +191,8 @@ export class UserService {
         throw new BadRequestError("Email already in use");
       }
 
+      logger.error("User.registerUser error", error);
+
       throw ErrorHandler.handleError(error);
     }
   }
@@ -379,16 +381,22 @@ export class UserService {
    * Assign a role to a user by role name
    * Only admins can assign roles
    */
-  async assignRoleToUser(userId: string, roleName: string): Promise<void> {
-    // Check user authentication
-    if (!this.userId) {
-      throw new UnauthorizedError("Authentication required");
-    }
+  async assignRoleToUser(
+    userId: string,
+    roleName: string,
+    initOperation: boolean = false
+  ): Promise<void> {
+    if (!initOperation) {
+      // Check user authentication
+      if (!this.userId) {
+        throw new UnauthorizedError("Authentication required");
+      }
 
-    // Only admins can assign roles
-    const userIsAdmin = await checkUserIsAdmin(this.userId);
-    if (!userIsAdmin) {
-      throw new UnauthorizedError("Only administrators can assign roles");
+      // Only admins can assign roles
+      const userIsAdmin = await checkUserIsAdmin(this.userId);
+      if (!userIsAdmin) {
+        throw new UnauthorizedError("Only administrators can assign roles");
+      }
     }
 
     const user = await User.findById(userId);
