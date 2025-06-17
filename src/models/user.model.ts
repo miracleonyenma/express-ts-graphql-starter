@@ -16,7 +16,7 @@ import { UserService } from "../services/user.services.js";
 
 const registerUserSchema = object({
   firstName: string().trim().min(2).required(),
-  lastName: string().trim().min(3).required(),
+  lastName: string().trim().min(3).optional(),
   email: string().email().required(),
   password: string().min(6).required(),
   phone: string().min(10).optional(),
