@@ -45,7 +45,6 @@ const userSchema = new mongoose.Schema<UserDocument, UserModel>(
     },
     lastName: {
       type: String,
-      required: true,
     },
     email: {
       type: String,
