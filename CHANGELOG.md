@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.1](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.2.0...v1.2.1) (2025-06-23)
+
+
+### Features
+
+* add createdAt and updatedAt fields to user type definitions; enhance pagination utility with improved sorting and population handling ([2cc1de2](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/2cc1de22015d8cf4a272a71c9823345edf9866e3))
+* enhance googleAuth mutation to accept redirect_uri and update token retrieval logic ([987d581](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/987d581309d0cef45964e32f975b60747ce700d8))
+* enhance user role assignment logic and improve authentication middleware for better error handling ([d442200](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/d4422004dd8d140fa9f29c344b2c75e14d7d1030))
+* implement consistent admin authorization checks across user service methods ([bf8c21d](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/bf8c21d7fcb9cbc943abba2d01a4a17665b72721))
+* refactor user service and resolvers for improved role management, filtering, and pagination ([766cf9a](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/766cf9aae375ac51cf8e5e92902a5152bad1d80f))
+* refactor UserService to include comprehensive user management features with error handling, filtering, pagination, and role management ([fb238da](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/fb238da618020070b15de7834ae2d82232267fd6))
+
+
+### Bug Fixes
+
+* change lastName field in registerUserSchema from required to optional ([7f109f2](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/7f109f2a6291a4c40c31ba0d7c09536f3a8dec5e))
+* remove required constraint from lastName field in user schema ([8bf6064](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/8bf6064ec5f6c385265eced2e5004cacf40621e7))
+
+
+### Chores
+
+* **deps-dev:** bump @types/node ([a20c862](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/a20c862a309bd8f64f301e947bbf35c58570a77a))
+* **deps:** bump bcrypt ([e63ee68](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/e63ee68c1ee5392579602115126cbe67471fed62))
+* **deps:** bump the production-dependencies group with 2 updates ([d3cb90d](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/d3cb90d959907dbdd8c23ff31317ccb1d61e681f))
+* update dependencies to latest versions ([86bc298](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/86bc2987ebd4a9c1c91967929cefc06315809e7c))
+
 ## [1.2.0](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.1.1...v1.2.0) (2025-05-01)
 
 
