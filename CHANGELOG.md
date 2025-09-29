@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.2](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.2.1...v1.2.2) (2025-09-29)
+
+
+### Chores
+
+* **deps:** add @as-integrations/express5 for Apollo Server integration ([b08c9de](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/b08c9de9c2622009451b279335c0733f0856f2b8))
+* **deps:** bump the production-dependencies group across 1 directory with 7 updates ([4404372](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/4404372a3cf682bd2f075de4d14ab076a38cb96b))
+
 ### [1.2.1](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.2.0...v1.2.1) (2025-06-23)
 
 
