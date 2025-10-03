@@ -46,7 +46,7 @@ interface EmailOptions {
   subject: string;
   htmlBody: string;
   textBody?: string;
-  to: Recipient;
+  to: Recipient | Recipient[];
   from?: Recipient;
   cc?: Recipient[];
   bcc?: Recipient[];
@@ -156,9 +156,11 @@ class NodemailerProvider implements EmailProviderInterface {
 
       const mailOptions: SendMailOptions = {
         from: `${fromName} <${fromEmail}>`,
-        to: options.to.name
-          ? `${options.to.name} <${options.to.email}>`
-          : options.to.email,
+        to: Array.isArray(options.to)
+          ? options.to.map((r) => (r.name ? `${r.name} <${r.email}>` : r.email))
+          : options.to.name
+            ? `${options.to.name} <${options.to.email}>`
+            : options.to.email,
         subject: options.subject,
         html: options.htmlBody,
         text: options.textBody,
@@ -308,14 +310,14 @@ class ZeptoMailProvider implements EmailProviderInterface {
           address: options.from?.email || this.defaultFromEmail,
           name: options.from?.name || this.defaultFromName,
         },
-        to: [
-          {
+        to: (Array.isArray(options.to) ? options.to : [options.to]).map(
+          (recipient) => ({
             email_address: {
-              address: options.to.email,
-              name: options.to.name || options.to.email.split("@")[0],
+              address: recipient.email,
+              name: recipient.name || recipient.email.split("@")[0],
             },
-          },
-        ],
+          })
+        ),
         subject: options.subject,
         htmlbody: options.htmlBody,
       };
@@ -416,15 +418,15 @@ class ZeptoMailProvider implements EmailProviderInterface {
             address: emailOptions.from?.email || this.defaultFromEmail,
             name: emailOptions.from?.name || this.defaultFromName,
           },
-          to: [
-            {
-              email_address: {
-                address: emailOptions.to.email,
-                name:
-                  emailOptions.to.name || emailOptions.to.email.split("@")[0],
-              },
+          to: (Array.isArray(emailOptions.to)
+            ? emailOptions.to
+            : [emailOptions.to]
+          ).map((recipient) => ({
+            email_address: {
+              address: recipient.email,
+              name: recipient.name || recipient.email.split("@")[0],
             },
-          ],
+          })),
           subject: emailOptions.subject,
           template_key: options.templateId,
         };
@@ -514,11 +516,9 @@ class ResendProvider implements EmailProviderInterface {
 
       const payload: ResendEmailPayload = {
         from,
-        to: [
-          options.to.name
-            ? `${options.to.name} <${options.to.email}>`
-            : options.to.email,
-        ],
+        to: (Array.isArray(options.to) ? options.to : [options.to]).map((r) =>
+          r.name ? `${r.name} <${r.email}>` : r.email
+        ),
         subject: options.subject,
         html: options.htmlBody,
       };
@@ -616,11 +616,10 @@ class ResendProvider implements EmailProviderInterface {
         // Create a payload that conforms to Resend's expected format for React templates
         const payload: ResendReactTemplatePayload = {
           from,
-          to: [
-            emailOptions.to.name
-              ? `${emailOptions.to.name} <${emailOptions.to.email}>`
-              : emailOptions.to.email,
-          ],
+          to: (Array.isArray(emailOptions.to)
+            ? emailOptions.to
+            : [emailOptions.to]
+          ).map((r) => (r.name ? `${r.name} <${r.email}>` : r.email)),
           subject: emailOptions.subject,
           react: {
             template_id: options.templateId,

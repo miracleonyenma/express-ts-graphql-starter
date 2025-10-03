@@ -12,7 +12,7 @@ import {
   UserDocument,
   UserModel,
 } from "../types/user.js";
-import { UserService } from "../services/user.services.js";
+import { userService } from "../services/user.services.js";
 
 const registerUserSchema = object({
   firstName: string().trim().min(2).required(),
@@ -34,8 +34,6 @@ const editUserSchema = object({
   picture: string().optional(),
   roles: array().of(string()).optional(),
 });
-
-const userService = new UserService({});
 
 const userSchema = new mongoose.Schema<UserDocument, UserModel>(
   {
@@ -77,6 +75,10 @@ const userSchema = new mongoose.Schema<UserDocument, UserModel>(
         default: [],
       },
     ],
+    country: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,

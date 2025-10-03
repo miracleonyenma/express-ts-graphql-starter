@@ -22,6 +22,8 @@ import {
   notFoundMiddleware,
 } from "./middlewares/error.middleware.js";
 import { ApiError } from "./services/error.services.js";
+import s3Router from "./routes/s3.routes.js";
+
 interface MyContext {
   token?: string;
   user?: any;
@@ -53,16 +55,23 @@ await server.start();
 // our loggerMiddleware.
 app.use(loggerMiddleware);
 
-// validate API Key middleware
-app.use(validateApiKey as RequestHandler);
+app.use("/api/s3", validateApiKey({ populateOwner: true }), s3Router);
 
-// our authenticate middleware.
-app.use(authenticate);
+// validate API Key middleware
+app.use(validateApiKey() as RequestHandler);
 
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
   "/graphql",
+  authenticate({
+    skipPaths: [
+      { path: "/graphql", method: "GET" },
+      { path: "/graphql", method: "OPTIONS" },
+      { path: "/", method: "GET" },
+      { path: "/", method: "OPTIONS" },
+    ],
+  }),
   cors<cors.CorsRequest>(),
   express.json(),
   (req, res, next) => {

@@ -1,3 +1,5 @@
+// ./src/types/user.ts
+
 import mongoose, { Document, Model, Types } from "mongoose";
 
 export type AccessTokenResponse = {
@@ -33,6 +35,7 @@ export interface User {
   phone?: string;
   phoneVerified?: boolean;
   roles?: Types.ObjectId[];
+  country?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -43,6 +46,7 @@ export type UpsertInput = {
   lastName: string;
   picture: string;
   verified_email: boolean;
+  country?: string;
 };
 
 export type RegisterUserInput = {
@@ -51,6 +55,7 @@ export type RegisterUserInput = {
   email: string;
   phone?: string;
   password: string;
+  country?: string;
 };
 
 export type EditUserInput = {
@@ -61,6 +66,7 @@ export type EditUserInput = {
     phone?: string;
     picture?: string;
     roles?: string[];
+    country?: string;
   };
 };
 

@@ -1,3 +1,5 @@
+// ./src/graphql/role.ts
+
 const roleTypeDefs = `#graphql
   type Role {
     id: ID!

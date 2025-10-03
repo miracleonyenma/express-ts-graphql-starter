@@ -1,6 +1,6 @@
 // ./src/graphql/resolvers/user.resolvers.ts
 
-import { UserService } from "../../services/user.services.js";
+import UserService from "../../services/user.services.js";
 import { ErrorHandler } from "../../services/error.services.js";
 
 const userResolvers = {

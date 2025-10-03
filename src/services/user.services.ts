@@ -40,7 +40,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 /**
  * User Service for handling user-related operations
  */
-export class UserService {
+class UserService {
   /**
    * User state
    */
@@ -176,6 +176,8 @@ export class UserService {
     lastName: string;
     email: string;
     password: string;
+    country?: string;
+    phone?: string;
   }): Promise<{ user: UserDocument }> {
     // Validate input
     if (!userData || !userData.email || !userData.password) {
@@ -412,4 +414,6 @@ export class UserService {
   }
 }
 
-export default new UserService({});
+export const userService = new UserService({});
+
+export default UserService;
