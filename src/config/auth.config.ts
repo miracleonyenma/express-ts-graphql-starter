@@ -35,7 +35,7 @@ class AuthConfigService implements AuthConfigInterface {
   public readonly frontendSuccessUrl: string;
   public readonly frontendErrorUrl: string;
   public readonly includeUserDataInRedirect: boolean;
-  private readonly appUrl: string;
+  private readonly apiUrl: string;
   private readonly allowedDomains: string[] | undefined;
 
   constructor() {
@@ -72,9 +72,9 @@ class AuthConfigService implements AuthConfigInterface {
     );
 
     // App URL for API endpoints with validation
-    this.appUrl = this.getValidatedUrl(
-      process.env.APP_URL || "http://localhost:4000",
-      "APP_URL"
+    this.apiUrl = this.getValidatedUrl(
+      process.env.API_URL || "http://localhost:4000",
+      "API_URL"
     );
 
     // Allowed domains for redirect URL validation
@@ -97,7 +97,7 @@ class AuthConfigService implements AuthConfigInterface {
   private getValidatedUrl(url: string, envVarName: string): string {
     if (!url) {
       console.warn(`Warning: ${envVarName} is not set, using default value`);
-      return envVarName === "APP_URL"
+      return envVarName === "API_URL"
         ? "http://localhost:4000"
         : "http://localhost:3000";
     }
@@ -109,7 +109,7 @@ class AuthConfigService implements AuthConfigInterface {
       console.warn(
         `Warning: Invalid URL format for ${envVarName}: ${url}. Using default.`
       );
-      return envVarName === "APP_URL"
+      return envVarName === "API_URL"
         ? "http://localhost:4000"
         : "http://localhost:3000";
     }
@@ -249,7 +249,7 @@ class AuthConfigService implements AuthConfigInterface {
   public generateMagicLinkUrl(token: string): string {
     if (this.mode === "rest" || this.mode === "hybrid") {
       // Generate API REST endpoint URL
-      return `${this.appUrl}/api/auth/magic-link/verify?token=${encodeURIComponent(token)}`;
+      return `${this.apiUrl}/api/auth/magic-link/verify?token=${encodeURIComponent(token)}`;
     } else {
       // Generate frontend URL for GraphQL mode
       return `${this.frontendSuccessUrl}/auth/magic-link?token=${encodeURIComponent(token)}`;
@@ -263,7 +263,7 @@ class AuthConfigService implements AuthConfigInterface {
   public generateGoogleOAuthUrl(): string {
     if (this.mode === "rest" || this.mode === "hybrid") {
       // Generate API REST endpoint URL for OAuth initiation
-      return `${this.appUrl}/api/auth/google/login`;
+      return `${this.apiUrl}/api/auth/google/login`;
     } else {
       // For GraphQL mode, return the frontend URL that will handle OAuth
       return `${this.frontendSuccessUrl}/auth/google`;
@@ -281,10 +281,10 @@ class AuthConfigService implements AuthConfigInterface {
     }
 
     if (this.mode === "rest" || this.mode === "hybrid") {
-      return `${this.appUrl}/api/auth/google/callback`;
+      return `${this.apiUrl}/api/auth/google/callback`;
     } else {
       // For GraphQL mode, use the existing pattern
-      return `${this.appUrl}/api/auth/google`;
+      return `${this.apiUrl}/api/auth/google`;
     }
   }
 
@@ -311,7 +311,7 @@ class AuthConfigService implements AuthConfigInterface {
       frontendSuccessUrl: this.frontendSuccessUrl,
       frontendErrorUrl: this.frontendErrorUrl,
       includeUserDataInRedirect: this.includeUserDataInRedirect,
-      appUrl: this.appUrl,
+      apiUrl: this.apiUrl,
       restModeEnabled: this.isRestModeEnabled(),
       graphqlModeEnabled: this.isGraphQLModeEnabled(),
     };
