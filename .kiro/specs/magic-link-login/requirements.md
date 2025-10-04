@@ -74,3 +74,63 @@ This feature adds magic link email authentication to the existing authentication
 3. WHEN validating tokens THEN the system SHALL use constant-time comparison to prevent timing attacks
 4. WHEN a magic link is used THEN the system SHALL log the authentication event for security monitoring
 5. WHEN implementing rate limiting THEN the system SHALL limit requests to 3 magic links per email per 15-minute window
+
+### Requirement 7
+
+**User Story:** As a user, I want to be able to click a magic link that directly authenticates me and redirects me to the frontend with my authentication tokens, so that I can have a seamless login experience without additional GraphQL calls.
+
+#### Acceptance Criteria
+
+1. WHEN a magic link is configured for REST endpoint verification THEN the system SHALL provide a GET endpoint that accepts the token as a URL parameter
+2. WHEN a user clicks a REST-based magic link THEN the system SHALL validate the token using the same security measures as GraphQL verification
+3. WHEN token validation is successful THEN the system SHALL redirect the user to a configured frontend URL with access and refresh tokens as URL parameters
+4. WHEN token validation fails THEN the system SHALL redirect the user to a configured error page with an appropriate error message
+5. WHEN redirecting with tokens THEN the system SHALL optionally include user data as URL parameters based on configuration
+
+### Requirement 8
+
+**User Story:** As a system administrator, I want to configure whether magic links point to the API REST endpoint or the frontend GraphQL flow, so that I can choose the authentication flow that best fits my application architecture.
+
+#### Acceptance Criteria
+
+1. WHEN generating magic links THEN the system SHALL check configuration to determine whether to generate API REST URLs or frontend URLs
+2. WHEN REST endpoint mode is enabled THEN the system SHALL generate magic links pointing to the API's REST verification endpoint
+3. WHEN frontend mode is enabled THEN the system SHALL generate magic links pointing to the frontend application for GraphQL-based verification
+4. WHEN REST endpoint mode is configured THEN the system SHALL allow configuration of the frontend redirect URL for successful authentication
+5. WHEN REST endpoint mode is configured THEN the system SHALL allow configuration of the error redirect URL for failed authentication
+
+### Requirement 9
+
+**User Story:** As a developer, I want the REST endpoint magic link verification to maintain the same security and compatibility standards as the GraphQL implementation, so that both authentication flows are equally secure and functional.
+
+#### Acceptance Criteria
+
+1. WHEN implementing REST endpoints THEN the system SHALL use the same token validation logic as GraphQL mutations
+2. WHEN REST authentication is successful THEN the system SHALL generate the same JWT tokens as GraphQL authentication
+3. WHEN REST authentication is successful THEN the system SHALL invalidate the magic link token to prevent reuse
+4. WHEN REST endpoints are implemented THEN the system SHALL maintain the same rate limiting and security logging as GraphQL endpoints
+5. WHEN REST endpoints are implemented THEN the system SHALL integrate with existing authentication middleware and error handling patterns
+
+### Requirement 10
+
+**User Story:** As a user, I want to be able to complete Google OAuth authentication through a REST endpoint that redirects me to the frontend with my authentication tokens, so that I can have a seamless OAuth login experience similar to magic links.
+
+#### Acceptance Criteria
+
+1. WHEN Google OAuth is configured for REST endpoint flow THEN the system SHALL provide GET endpoints for OAuth initiation and callback handling
+2. WHEN a user initiates Google OAuth through REST endpoint THEN the system SHALL redirect to Google's OAuth authorization URL with proper parameters
+3. WHEN Google OAuth callback is received THEN the system SHALL validate the authorization code and exchange it for user information
+4. WHEN OAuth validation is successful THEN the system SHALL redirect the user to a configured frontend URL with access and refresh tokens as URL parameters
+5. WHEN OAuth validation fails THEN the system SHALL redirect the user to a configured error page with an appropriate error message
+
+### Requirement 11
+
+**User Story:** As a system administrator, I want to configure whether OAuth flows use REST endpoints or GraphQL mutations, so that I can maintain consistent authentication patterns across all login methods.
+
+#### Acceptance Criteria
+
+1. WHEN configuring authentication methods THEN the system SHALL allow enabling REST endpoints for both magic link and Google OAuth flows
+2. WHEN REST endpoint mode is enabled for OAuth THEN the system SHALL generate OAuth initiation URLs pointing to the API's REST endpoints
+3. WHEN REST endpoint mode is enabled THEN the system SHALL use the same frontend redirect URLs for both magic link and OAuth successful authentication
+4. WHEN REST endpoint mode is enabled THEN the system SHALL use the same error redirect URLs for both magic link and OAuth failed authentication
+5. WHEN REST endpoint mode is configured THEN the system SHALL allow optional inclusion of user data in redirect URL parameters for both authentication methods
