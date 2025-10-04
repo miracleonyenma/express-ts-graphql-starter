@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.2.2...v1.3.0) (2025-10-04)
+
+
+### Features
+
+* **auth:** add magic link login design specification ([28fada9](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/28fada9c015f21c2a505ed07ce918140158a846e))
+* **auth:** Implement comprehensive authentication configuration system ([4d8d8c3](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/4d8d8c339cdb088f4d48d41ba049cb128ca086bd))
+* **auth:** implement magic link login functionality ([ccbdd29](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/ccbdd2908a44213fc5ba76b209d3b74962dc6e48)), closes [#TASK-123](https://github.com/miracleonyenma/express-ts-graphql-starter/issues/TASK-123)
+* **file:** add S3 file upload service and related functionality ([456d76d](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/456d76da9cdb63fd087d55143b6022179207ac1a))
+* **magic-link:** Enhance magic link authentication infrastructure ([e9f4aaf](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/e9f4aaf6468388f17592253157cbf3bfb58cc989))
+* **magic-link:** Improve magic link token generation and email sending ([e6085c0](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/e6085c00ec85818a155c6696d46f340a467f2666))
+* **otp:** add verification link to email template ([7ac8296](https://github.com/miracleonyenma/express-ts-graphql-starter/commit/7ac829612d010e2233b07f6b71430fa5cb30236c))
+
 ### [1.2.2](https://github.com/miracleonyenma/express-ts-graphql-starter/compare/v1.2.1...v1.2.2) (2025-09-29)
 
 
