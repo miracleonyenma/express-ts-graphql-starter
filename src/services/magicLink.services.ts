@@ -52,16 +52,6 @@ class MagicLinkService {
   }
 
   /**
-   * Hash a token using bcrypt
-   * @param token The raw token to hash
-   * @returns {Promise<string>} The hashed token
-   */
-  private async hashToken(token: string): Promise<string> {
-    const saltRounds = 12;
-    return bcrypt.hash(token, saltRounds);
-  }
-
-  /**
    * Compare a raw token with a hashed token using constant-time comparison
    * @param rawToken The raw token to compare
    * @param hashedToken The hashed token to compare against
@@ -186,18 +176,35 @@ class MagicLinkService {
         const rawToken = this.generateSecureToken();
 
         // Create magic link token record
-        // Note: We temporarily store the raw token for the email service
         const magicLinkToken = new MagicLinkToken({
           email: normalizedEmail,
           tokenHash: rawToken, // This will be hashed in the pre-save middleware
           expires: new Date(Date.now() + this.TOKEN_EXPIRY),
         });
 
-        // Store raw token temporarily for email sending
-        (magicLinkToken as any)._rawToken = rawToken;
-
-        // Save the token (this will trigger email sending via pre-save middleware)
+        // Save the token first
         await magicLinkToken.save();
+
+        // Send magic link email with the raw token
+        try {
+          await sendMagicLinkMail(
+            normalizedEmail,
+            rawToken,
+            `${userExists.firstName} ${userExists.lastName}`.trim() || undefined
+          );
+        } catch (emailError) {
+          console.log("🚫 Error sending magic link: ", emailError);
+          // If email sending fails, clean up the token to maintain consistency
+          await MagicLinkToken.findByIdAndDelete(magicLinkToken._id);
+          logger.error("Failed to send magic link email, token cleaned up", {
+            email: normalizedEmail,
+            tokenId: magicLinkToken._id,
+            error: emailError.message,
+          });
+          throw new InternalServerError(
+            "Failed to send magic link email. Please try again later."
+          );
+        }
 
         logger.info("Magic link requested successfully", {
           email: normalizedEmail,
@@ -262,7 +269,6 @@ class MagicLinkService {
       });
 
       let validToken = null;
-      let matchedUser = null;
 
       // Use constant-time comparison to prevent timing attacks
       for (const dbToken of magicLinkTokens) {
@@ -415,6 +421,8 @@ export const sendMagicLinkMail = async (
         name: userName || email.split("@")[0],
       },
     });
+
+    logger.log("🔍 Mail Response: ", mailResponse);
 
     if (!mailResponse.success) {
       logger.error("Failed to send magic link email", {

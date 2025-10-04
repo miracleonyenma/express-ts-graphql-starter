@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import nodemailer, { Transporter, SendMailOptions } from "nodemailer";
 import { SendMailClient } from "zeptomail";
 import { Resend } from "resend";
+import { logger } from "@untools/logger";
 
 dotenv.config();
 
@@ -564,8 +565,12 @@ class ResendProvider implements EmailProviderInterface {
 
       // The response type might vary based on Resend's API
       // Handle it safely with optional chaining
-      const success = Boolean(response && (response as any).id);
+      const success = Boolean(
+        (response && (response as any).id) || response?.data?.id
+      );
       const messageId = (response as any)?.id || "";
+
+      logger.log("🔍 Resend Response: ", response);
 
       return {
         success,
