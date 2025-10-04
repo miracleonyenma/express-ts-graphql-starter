@@ -6,11 +6,14 @@ import { config } from "dotenv";
 
 config();
 
+const APP_URL = process.env.APP_URL;
+
 const sendVerificationMail = async (
   email: string,
   otp: string,
   userName?: string
 ) => {
+  const verificationLink = `${APP_URL}/auth/verify?email=${email}&otp=${otp}&sent=true`;
   try {
     // Initialize the email service with default provider from environment
     const emailService = new EmailService();
@@ -20,6 +23,8 @@ const sendVerificationMail = async (
       <p>Your one-time verification code is:</p>
       <div style="text-align: center; margin: 25px 0;">
         <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; padding: 12px 24px; background-color: #f7f7f7; display: inline-block; border-radius: 4px;">${otp}</div>
+        <br />
+        <a href="${verificationLink}" style="display: inline-block; padding: 12px 24px; background-color: #1a74e4; color: white; text-decoration: none; border-radius: 4px; font-weight: 500; margin: 20px 0;">Verify Email</a>
       </div>
       <p>This code will expire in 10 minutes.</p>
       <p>If you didn't request this code, please ignore this email.</p>
