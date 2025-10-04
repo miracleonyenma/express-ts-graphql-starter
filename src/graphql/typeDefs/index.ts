@@ -2,6 +2,7 @@
 
 import apiKeyTypeDefs from "../typeDefs/apiKey.js";
 import googleAuthTypeDefs from "../typeDefs/google.auth.js";
+import magicLinkTypeDefs from "../typeDefs/magicLink.js";
 import otpTypeDefs from "../typeDefs/otp.js";
 import passwordResetTypeDefs from "../typeDefs/passwordReset.js";
 import roleTypeDefs from "../typeDefs/role.js";
@@ -114,6 +115,7 @@ const typeDefs = `
   ${otpTypeDefs}
   ${apiKeyTypeDefs}
   ${googleAuthTypeDefs}
+  ${magicLinkTypeDefs}
   ${passwordResetTypeDefs}
 `;
 

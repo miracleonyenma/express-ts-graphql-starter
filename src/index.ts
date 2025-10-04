@@ -65,6 +65,7 @@ app.use(validateApiKey() as RequestHandler);
 app.use(
   "/graphql",
   authenticate({
+    soft: true,
     skipPaths: [
       { path: "/graphql", method: "GET" },
       { path: "/graphql", method: "OPTIONS" },

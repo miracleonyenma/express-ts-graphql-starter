@@ -5,6 +5,7 @@ import roleResolvers from "./role.resolvers.js";
 import otpResolvers from "./otp.resolvers.js";
 import apiKeyResolvers from "./apiKey.resolvers.js";
 import googleAuthResolvers from "./google.auth.resolvers.js";
+import magicLinkResolvers from "./magicLink.resolvers.js";
 import passwordResetResolvers from "./passwordReset.resolvers.js";
 
 /**
@@ -42,6 +43,7 @@ const resolvers = {
     ...otpResolvers.Mutation,
     ...apiKeyResolvers.Mutation,
     ...googleAuthResolvers.Mutation,
+    ...magicLinkResolvers.Mutation,
     ...passwordResetResolvers.Mutation,
   },
 
