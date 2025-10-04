@@ -1,3 +1,5 @@
+// src/config/auth.config.ts
+
 import { config } from "dotenv";
 import {
   buildSuccessRedirectUrl,

@@ -1,3 +1,5 @@
+// ./src/services/magicLink.services.ts
+
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { config } from "dotenv";

@@ -1,3 +1,5 @@
+// ./src/graphql/typeDefs/magicLink.ts
+
 const magicLinkTypeDefs = `#graphql
   """
   Response type for magic link request operations

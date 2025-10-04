@@ -1,3 +1,5 @@
+// ./src/controllers/auth.controller.ts
+
 import { Request, Response } from "express";
 import { logger } from "@untools/logger";
 import crypto from "crypto";

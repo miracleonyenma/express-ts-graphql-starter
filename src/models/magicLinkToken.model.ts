@@ -1,3 +1,5 @@
+// ./src/models/magicLinkToken.model.ts
+
 import mongoose, { Schema } from "mongoose";
 import { hash } from "bcrypt";
 
