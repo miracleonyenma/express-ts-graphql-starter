@@ -18,11 +18,11 @@ import {
   accessTokenData,
 } from "../utils/token.js";
 import { UserDocument } from "../types/user.js";
+import { authConfig } from "../config/auth.config.js";
 
 config();
 
 const APP_NAME = process.env.APP_NAME || "Application";
-const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
 /**
  * Rate limiting storage for magic link requests
@@ -369,6 +369,52 @@ class MagicLinkService {
 }
 
 /**
+ * Validates email configuration for magic link sending
+ */
+const validateEmailConfiguration = (): void => {
+  const requiredEmailVars = ["MAIL_USER"];
+  const missingVars = requiredEmailVars.filter(
+    (varName) => !process.env[varName]
+  );
+
+  if (missingVars.length > 0) {
+    console.warn(
+      `Warning: Email configuration incomplete. Missing: ${missingVars.join(", ")}. Magic link emails may fail to send.`
+    );
+  }
+
+  // Check if a valid email provider is configured
+  const emailProvider = process.env.DEFAULT_MAIL_PROVIDER || "nodemailer";
+  const validProviders = ["nodemailer", "zeptomail", "resend"];
+
+  if (!validProviders.includes(emailProvider)) {
+    console.warn(
+      `Warning: Invalid email provider '${emailProvider}'. Valid options: ${validProviders.join(", ")}`
+    );
+  }
+
+  // Provider-specific validation
+  if (emailProvider === "zeptomail" && !process.env.ZOHO_KEY) {
+    console.warn("Warning: ZeptoMail selected but ZOHO_KEY is not configured");
+  }
+
+  if (emailProvider === "resend" && !process.env.RESEND_API_KEY) {
+    console.warn(
+      "Warning: Resend selected but RESEND_API_KEY is not configured"
+    );
+  }
+
+  if (
+    emailProvider === "nodemailer" &&
+    (!process.env.MAIL_USER || !process.env.MAIL_PASS)
+  ) {
+    console.warn(
+      "Warning: Nodemailer selected but MAIL_USER or MAIL_PASS is not configured"
+    );
+  }
+};
+
+/**
  * Send magic link email to user
  * @param email The user's email address
  * @param token The raw magic link token
@@ -381,11 +427,14 @@ export const sendMagicLinkMail = async (
   userName?: string
 ) => {
   try {
+    // Validate email configuration before attempting to send
+    validateEmailConfiguration();
+
     // Initialize email service
     const emailService = new EmailService();
 
-    // Create the magic link URL
-    const magicLinkURL = `${APP_URL}/auth/magic-link?token=${token}`;
+    // Create the magic link URL using configurable URL generation
+    const magicLinkURL = authConfig.generateMagicLinkUrl(token);
 
     // Create email content with proper button styling
     const content = `

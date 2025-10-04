@@ -23,6 +23,7 @@ import {
 } from "./middlewares/error.middleware.js";
 import { ApiError } from "./services/error.services.js";
 import s3Router from "./routes/s3.routes.js";
+import authRouter from "./routes/auth.routes.js";
 
 interface MyContext {
   token?: string;
@@ -56,6 +57,9 @@ await server.start();
 app.use(loggerMiddleware);
 
 app.use("/api/s3", validateApiKey({ populateOwner: true }), s3Router);
+
+// Auth routes (magic link and OAuth REST endpoints)
+app.use("/api/auth", authRouter);
 
 // validate API Key middleware
 app.use(validateApiKey() as RequestHandler);

@@ -93,74 +93,74 @@
   - Create alerts for suspicious authentication patterns
   - _Requirements: 4.2, 4.3, 6.5_
 
-- [ ] 6. Create authentication configuration system
-- [ ] 6.1 Implement authentication configuration service
+- [x] 6. Create authentication configuration system
+- [x] 6.1 Implement authentication configuration service
 
   - Create AuthConfig service to manage GraphQL vs REST mode settings
   - Add environment variable parsing for authentication flow configuration
   - Implement URL generation methods for both frontend and API magic links
   - _Requirements: 8.1, 8.2, 8.3, 11.2_
 
-- [ ] 6.2 Add configuration for redirect URLs and user data inclusion
+- [x] 6.2 Add configuration for redirect URLs and user data inclusion
 
   - Implement frontend success and error redirect URL configuration
   - Add optional user data inclusion in redirect URL parameters
   - Create URL parameter sanitization and validation utilities
   - _Requirements: 8.4, 8.5, 11.4, 11.5_
 
-- [ ] 7. Implement REST endpoints for magic link authentication
-- [ ] 7.1 Create REST routes and controller structure
+- [x] 7. Implement REST endpoints for magic link authentication
+- [x] 7.1 Create REST routes and controller structure
 
   - Set up Express routes for magic link REST endpoints
   - Create AuthController class with magic link REST methods
   - Implement proper middleware integration for REST endpoints
   - _Requirements: 7.1, 9.5_
 
-- [ ] 7.2 Implement magic link request REST endpoint
+- [x] 7.2 Implement magic link request REST endpoint
 
   - Create POST /auth/magic-link/request endpoint
   - Integrate with existing MagicLinkService for token generation
   - Implement JSON response handling for REST magic link requests
   - _Requirements: 7.1, 9.1, 9.4_
 
-- [ ] 7.3 Implement magic link verification REST endpoint
+- [x] 7.3 Implement magic link verification REST endpoint
 
   - Create GET /auth/magic-link/verify endpoint with token parameter
   - Implement token validation using existing service methods
   - Add redirect functionality with auth tokens as URL parameters
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 9.1, 9.2, 9.3_
 
-- [ ] 8. Implement REST endpoints for Google OAuth authentication
-- [ ] 8.1 Create Google OAuth initiation REST endpoint
+- [x] 8. Implement REST endpoints for Google OAuth authentication
+- [x] 8.1 Create Google OAuth initiation REST endpoint
 
   - Create GET /auth/google/login endpoint for OAuth initiation
   - Generate Google OAuth authorization URL with proper parameters
   - Implement state parameter for CSRF protection
   - _Requirements: 10.1, 10.2_
 
-- [ ] 8.2 Implement Google OAuth callback REST endpoint
+- [x] 8.2 Implement Google OAuth callback REST endpoint
 
   - Create GET /auth/google/callback endpoint for OAuth callback handling
   - Integrate with existing GoogleAuthService for code exchange
   - Add user authentication and JWT token generation
   - _Requirements: 10.1, 10.3, 10.4, 10.5_
 
-- [ ] 8.3 Add redirect handling for Google OAuth flow
+- [x] 8.3 Add redirect handling for Google OAuth flow
 
   - Implement successful authentication redirect with tokens in URL
   - Add error handling with redirect to configured error page
   - Ensure consistent redirect behavior with magic link endpoints
   - _Requirements: 10.4, 10.5, 11.3, 11.4_
 
-- [ ] 9. Update email service for configurable URL generation
-- [ ] 9.1 Modify magic link email generation
+- [x] 9. Update email service for configurable URL generation
+- [x] 9.1 Modify magic link email generation
 
   - Update email template generation to use configurable URLs
   - Implement logic to generate either frontend or API URLs based on configuration
   - Ensure backward compatibility with existing GraphQL-only setups
   - _Requirements: 8.1, 8.2, 8.3_
 
-- [ ] 9.2 Add environment variable integration
+- [x] 9.2 Add environment variable integration
 
   - Update email service to read authentication mode configuration
   - Implement proper fallback behavior when configuration is missing
