@@ -50,7 +50,7 @@
     "otp-generator": "^4.0.1",
     "resend": "^6.0.1",
     "yup": "^1.6.1",
-    "zeptomail": "^6.2.1"
+    "zeptomail": "^7.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
