@@ -35,7 +35,7 @@
     "@apollo/server": "^5.0.0",
     "@as-integrations/express5": "^1.1.2",
     "@aws-sdk/client-s3": "^3.901.0",
-    "@untools/logger": "^0.0.6",
+    "@untools/logger": "^0.0.7",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
@@ -43,14 +43,14 @@
     "graphql": "^16.11.0",
     "iso-country-currency": "^0.7.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.16.0",
+    "mongoose": "^9.0.0",
     "multer": "^2.0.2",
     "nanoid": "^5.1.5",
     "nodemailer": "^7.0.3",
     "otp-generator": "^4.0.1",
     "resend": "^6.0.1",
     "yup": "^1.6.1",
-    "zeptomail": "^6.2.1"
+    "zeptomail": "^7.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
