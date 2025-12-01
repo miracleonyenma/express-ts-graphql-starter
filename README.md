@@ -16,6 +16,7 @@ A starter project for setting up a TypeScript Express server with Apollo GraphQL
 - **API Key Management**: Secure API key generation and validation.
 - **Password Reset**: Secure password reset functionality.
 - **Environment Configuration**: `.env` file support for managing sensitive configurations.
+- **Security**: Row Level Security (RLS) enabled by default on all tables.
 
 ---
 
