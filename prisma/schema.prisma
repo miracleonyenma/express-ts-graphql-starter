@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  firstName     String
+  lastName      String?
+  email         String    @unique
+  phone         String?
+  phoneVerified Boolean   @default(false)
+  picture       String?
+  count         Int       @default(0)
+  password      String?
+  emailVerified Boolean   @default(false)
+  country       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  roles               Role[]
+  files               File[]
+  apiKeys             ApiKey[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model Role {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[]
+}
+
+model File {
+  id            String   @id @default(uuid())
+  name          String
+  type          String
+  size          Int
+  s3Key         String   @unique
+  s3Url         String
+  cloudinaryId  String?
+  cloudinaryUrl String?
+  pinataId      String?
+  pinataUrl     String?
+  supabaseId    String?
+  supabaseUrl   String?
+  purpose       String?
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model MagicLinkToken {
+  id        String   @id @default(uuid())
+  email     String
+  tokenHash String   @unique
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, used])
+  @@index([tokenHash, used])
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  email     String
+  otp       String
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String
+  expires   DateTime
+  createdAt DateTime @default(now())
+}

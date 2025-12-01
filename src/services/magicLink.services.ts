@@ -4,8 +4,7 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { config } from "dotenv";
 import { logger } from "@untools/logger";
-import MagicLinkToken from "../models/magicLinkToken.model.js";
-import User from "../models/user.model.js";
+import prisma from "../config/prisma.js";
 import { EmailService, createEmailButton } from "../utils/emails/index.js";
 import {
   BadRequestError,
@@ -171,21 +170,28 @@ class MagicLinkService {
       }
 
       // Check if user exists (but don't reveal this information in the response)
-      const userExists = await User.findOne({ email: normalizedEmail });
+      const userExists = await prisma.user.findUnique({
+        where: { email: normalizedEmail },
+      });
 
       if (userExists) {
         // Generate secure token
         const rawToken = this.generateSecureToken();
+        const hashedToken = await bcrypt.hash(rawToken, 12);
 
         // Create magic link token record
-        const magicLinkToken = new MagicLinkToken({
-          email: normalizedEmail,
-          tokenHash: rawToken, // This will be hashed in the pre-save middleware
-          expires: new Date(Date.now() + this.TOKEN_EXPIRY),
+        // Note: We need to handle cleanup of existing unused tokens for this email
+        await prisma.magicLinkToken.deleteMany({
+          where: { email: normalizedEmail, used: false },
         });
 
-        // Save the token first
-        await magicLinkToken.save();
+        const magicLinkToken = await prisma.magicLinkToken.create({
+          data: {
+            email: normalizedEmail,
+            tokenHash: hashedToken,
+            expires: new Date(Date.now() + this.TOKEN_EXPIRY),
+          },
+        });
 
         // Send magic link email with the raw token
         try {
@@ -197,10 +203,12 @@ class MagicLinkService {
         } catch (emailError) {
           console.log("🚫 Error sending magic link: ", emailError);
           // If email sending fails, clean up the token to maintain consistency
-          await MagicLinkToken.findByIdAndDelete(magicLinkToken._id);
+          await prisma.magicLinkToken.delete({
+            where: { id: magicLinkToken.id },
+          });
           logger.error("Failed to send magic link email, token cleaned up", {
             email: normalizedEmail,
-            tokenId: magicLinkToken._id,
+            tokenId: magicLinkToken.id,
             error: emailError.message,
           });
           throw new InternalServerError(
@@ -210,7 +218,7 @@ class MagicLinkService {
 
         logger.info("Magic link requested successfully", {
           email: normalizedEmail,
-          tokenId: magicLinkToken._id,
+          tokenId: magicLinkToken.id,
         });
       } else {
         // Log the attempt for security monitoring
@@ -265,9 +273,11 @@ class MagicLinkService {
 
       // Find all unused magic link tokens and check each one
       // We need to do this because tokens are hashed in the database
-      const magicLinkTokens = await MagicLinkToken.find({
-        used: false,
-        expires: { $gt: new Date() }, // Only get non-expired tokens
+      const magicLinkTokens = await prisma.magicLinkToken.findMany({
+        where: {
+          used: false,
+          expires: { gt: new Date() },
+        },
       });
 
       let validToken = null;
@@ -294,30 +304,33 @@ class MagicLinkService {
       }
 
       // Find the user associated with this token
-      const user = await User.findOne({ email: validToken.email }).populate(
-        "roles"
-      );
+      const user = await prisma.user.findUnique({
+        where: { email: validToken.email },
+        include: { roles: true },
+      });
 
       if (!user) {
         logger.error("Magic link token found but user does not exist", {
           email: validToken.email,
-          tokenId: validToken._id,
+          tokenId: validToken.id,
         });
         throw new UnauthorizedError("User account not found.");
       }
 
       // Mark token as used to prevent reuse
-      validToken.used = true;
-      await validToken.save();
+      await prisma.magicLinkToken.update({
+        where: { id: validToken.id },
+        data: { used: true },
+      });
 
       // Generate JWT tokens using existing patterns
       const accessToken = createAccessToken(accessTokenData(user));
-      const refreshToken = createRefreshToken({ id: user._id });
+      const refreshToken = createRefreshToken({ id: user.id });
 
       logger.info("Magic link authentication successful", {
-        userId: user._id,
+        userId: user.id,
         email: user.email,
-        tokenId: validToken._id,
+        tokenId: validToken.id,
       });
 
       return {
@@ -351,18 +364,20 @@ class MagicLinkService {
    */
   async cleanupExpiredTokens(): Promise<number> {
     try {
-      const result = await MagicLinkToken.deleteMany({
-        $or: [
-          { expires: { $lt: new Date() } }, // Expired tokens
-          { used: true }, // Used tokens older than 1 hour
-        ],
+      const result = await prisma.magicLinkToken.deleteMany({
+        where: {
+          OR: [
+            { expires: { lt: new Date() } },
+            { used: true }, // Assuming we want to delete used tokens too, or check creation time
+          ],
+        },
       });
 
       logger.info("Cleaned up expired magic link tokens", {
-        deletedCount: result.deletedCount,
+        deletedCount: result.count,
       });
 
-      return result.deletedCount;
+      return result.count;
     } catch (error) {
       logger.error("Failed to cleanup expired magic link tokens", error);
       throw ErrorHandler.handleError(error);

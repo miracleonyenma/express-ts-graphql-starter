@@ -1,15 +1,13 @@
-// ./src/controllers/auth.controller.ts
-
 import { Request, Response } from "express";
 import { logger } from "@untools/logger";
 import crypto from "crypto";
 import MagicLinkService from "../services/magicLink.services.js";
+import { userService } from "../services/user.services.js";
 import { authConfig } from "../config/auth.config.js";
 import {
   getGoogleOAuthTokens,
   getGoogleUser,
 } from "../services/google.auth.services.js";
-import User from "../models/user.model.js";
 import {
   accessTokenData,
   createAccessToken,
@@ -186,7 +184,7 @@ export class AuthController {
 
       if (successUrl) {
         logger.info("Magic link verification successful, redirecting", {
-          userId: authResult.user._id,
+          userId: authResult.user.id,
           email: authResult.user.email,
         });
         res.redirect(successUrl);
@@ -424,7 +422,7 @@ export class AuthController {
       }
 
       // Upsert user in database
-      const user = await User.upsertGoogleUser({
+      const user = await userService.upsertGoogleUser({
         email: googleUser.email,
         firstName: googleUser.given_name,
         lastName: googleUser.family_name,
@@ -434,10 +432,10 @@ export class AuthController {
 
       // Generate JWT tokens
       const accessToken = createAccessToken(accessTokenData(user));
-      const refreshToken = createRefreshToken({ id: user._id });
+      const refreshToken = createRefreshToken({ id: user.id });
 
       logger.info("Google OAuth authentication successful", {
-        userId: user._id,
+        userId: user.id,
         email: user.email,
       });
 

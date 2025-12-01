@@ -1,7 +1,5 @@
 import { generateApiKey } from "../../utils/token.js";
-import ApiKey from "../../models/apiKey.model.js";
-import User from "../../models/user.model.js";
-import Role from "../../models/role.model.js";
+import prisma from "../../config/prisma.js";
 
 const checkIfAuthorized = async (context) => {
   const contextUser = context?.user?.data;
@@ -10,14 +8,16 @@ const checkIfAuthorized = async (context) => {
     throw new Error("Unauthorized");
   }
 
-  const user = await User.findById(contextUser?.id).populate("roles");
+  const user = await prisma.user.findUnique({
+    where: { id: contextUser.id },
+    include: { roles: true },
+  });
+
   if (!user) {
     throw new Error("User not found");
   }
 
-  const roles = await Role.find({ _id: { $in: user.roles } });
-
-  if (!roles.find((role) => role.name === "admin")) {
+  if (!user.roles.find((role) => role.name === "admin")) {
     throw new Error("Unauthorized: Admin access required");
   }
 
@@ -30,7 +30,9 @@ const ApiKeyResolvers = {
       try {
         await checkIfAuthorized(context);
 
-        const apiKeys = await ApiKey.find({}).populate("owner");
+        const apiKeys = await prisma.apiKey.findMany({
+          include: { owner: true },
+        });
         return apiKeys;
       } catch (error) {
         console.log("Query.apiKeys error", error);
@@ -41,7 +43,10 @@ const ApiKeyResolvers = {
       try {
         await checkIfAuthorized(context);
 
-        return await ApiKey.findById(args.id).populate("owner");
+        return await prisma.apiKey.findUnique({
+          where: { id: args.id },
+          include: { owner: true },
+        });
       } catch (error) {
         console.log("Query.apiKey error", error);
         throw new Error(error);
@@ -55,12 +60,15 @@ const ApiKeyResolvers = {
 
         const apiKey = generateApiKey();
 
-        const newApiKey = await ApiKey.create({
-          key: apiKey,
-          owner: user._id,
+        const newApiKey = await prisma.apiKey.create({
+          data: {
+            key: apiKey,
+            owner: { connect: { id: user.id } },
+          },
+          include: { owner: true },
         });
 
-        return await newApiKey.populate("owner");
+        return newApiKey;
       } catch (error) {
         console.log("Mutation.generateApiKey error", error);
         throw new Error(error);
@@ -70,12 +78,14 @@ const ApiKeyResolvers = {
       try {
         await checkIfAuthorized(context);
 
-        const apiKey = await ApiKey.findById(args.id);
+        const apiKey = await prisma.apiKey.findUnique({
+          where: { id: args.id },
+        });
         if (!apiKey) {
           throw new Error("Api Key not found");
         }
 
-        await apiKey.deleteOne();
+        await prisma.apiKey.delete({ where: { id: args.id } });
         return "Api Key revoked successfully";
       } catch (error) {
         console.log("Mutation.revokeApiKey error", error);

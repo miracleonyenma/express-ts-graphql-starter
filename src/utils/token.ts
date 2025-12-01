@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import pkg, { JwtPayload, SignOptions } from "jsonwebtoken";
 import { config } from "dotenv";
 import crypto from "crypto";
@@ -13,7 +12,7 @@ const REFRESH_TOKEN_SECRET =
 
 // Create access token
 const createAccessToken = (
-  data: any | { id: Types.ObjectId },
+  data: any | { id: string },
   dur: SignOptions["expiresIn"] = "3d"
 ) => {
   return sign({ data }, ACCESS_TOKEN_SECRET, {
@@ -23,7 +22,7 @@ const createAccessToken = (
 
 // Create refresh token
 const createRefreshToken = (
-  data: any | { id: Types.ObjectId },
+  data: any | { id: string },
   dur: SignOptions["expiresIn"] = "7d"
 ) => {
   return sign({ data }, REFRESH_TOKEN_SECRET, {
@@ -51,7 +50,7 @@ const generateResetToken = (): string => {
 
 const accessTokenData = (user) => {
   return {
-    id: user._id,
+    id: user.id,
     email: user.email,
     roles: user.roles,
     emailVerified: user.emailVerified,

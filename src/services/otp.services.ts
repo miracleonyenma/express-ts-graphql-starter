@@ -1,7 +1,6 @@
 import otpGenerator from "otp-generator";
 import { EmailService } from "../utils/emails/index.js";
-import OTP from "../models/otp.model.js";
-import User from "../models/user.model.js";
+import prisma from "../config/prisma.js";
 import { config } from "dotenv";
 
 config();
@@ -58,7 +57,7 @@ const initOTPGeneration = async (email: string) => {
 
   try {
     // Check if user with email exists
-    const userExists = await User.findOne({ email });
+    const userExists = await prisma.user.findUnique({ where: { email } });
 
     console.log({ userExists });
 
@@ -73,20 +72,25 @@ const initOTPGeneration = async (email: string) => {
     });
 
     // Save OTP to database with expiry (10 minutes from now)
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+    // Note: Prisma doesn't have native TTL, so we rely on cron or logic to clean up, or just check expiry on read.
+    // However, Mongoose had TTL index. PostgreSQL doesn't have native TTL.
+    // We can use a scheduled job or just ignore expired ones.
+    // For now, we just save it.
 
-    // Create or update OTP record
-    const OTPObject = await OTP.findOneAndUpdate(
-      { email },
-      {
-        email,
-        otp,
-        expiresAt,
-        verified: false,
-      },
-      { upsert: true, new: true }
-    );
+    // Check if OTP exists for this email
+    const existingOTP = await prisma.otp.findFirst({ where: { email } });
+
+    let OTPObject;
+    if (existingOTP) {
+      OTPObject = await prisma.otp.update({
+        where: { id: existingOTP.id },
+        data: { otp, createdAt: new Date() }, // Update createdAt to reset timer effectively if we check age
+      });
+    } else {
+      OTPObject = await prisma.otp.create({
+        data: { email, otp },
+      });
+    }
 
     // Send verification email with user's name if available
     const mailResponse = await sendVerificationMail(

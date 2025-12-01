@@ -133,7 +133,7 @@ export function extractUserDataForRedirect(
   user: UserDocument
 ): UserDataForRedirect {
   return {
-    userId: user._id.toString(),
+    userId: user.id,
     email: user.email,
     name:
       user.firstName && user.lastName

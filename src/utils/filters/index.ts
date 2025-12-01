@@ -1,5 +1,4 @@
 // src/utils/filters.ts
-import mongoose from "mongoose";
 
 /**
  * Type for all filter options used in the wallet service
@@ -21,14 +20,6 @@ export namespace Filters {
     updatedBefore?: Date | string;
   }
 }
-
-/**
- * Helper function to check if a string is a valid MongoDB ObjectId
- */
-const isValidObjectId = (id?: string): boolean => {
-  if (!id) return false;
-  return mongoose.Types.ObjectId.isValid(id);
-};
 
 /**
  * Helper function to convert string dates to Date objects

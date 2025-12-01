@@ -1,12 +1,11 @@
-import OTP from "../../models/otp.model.js";
-import User from "../../models/user.model.js";
+import prisma from "../../config/prisma.js";
 import { initOTPGeneration } from "../../services/otp.services.js";
 
 const OTPResolvers = {
   Query: {
     otps: async (parent, args, context, info) => {
       try {
-        const otps = await OTP.find({});
+        const otps = await prisma.otp.findMany();
 
         return otps;
       } catch (error) {
@@ -16,7 +15,7 @@ const OTPResolvers = {
     },
     otp: async (parent, args, context, info) => {
       try {
-        return await OTP.findById(args.id);
+        return await prisma.otp.findUnique({ where: { id: args.id } });
       } catch (error) {
         console.log("Query.otp error", error);
         throw new Error(error);
@@ -47,24 +46,26 @@ const OTPResolvers = {
 
         const email = args.input?.email;
         const otp = args.input?.otp;
-        const otpDoc = await OTP.findOne({ email, otp });
+        const otpDoc = await prisma.otp.findFirst({ where: { email, otp } });
         console.log({ otpDoc });
 
         if (!otpDoc) {
           throw new Error("Invalid OTP");
         }
         // get user from email
-        const user = await User.findOne({ email });
+        const user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
           throw new Error("User not found");
         }
         // set user as verified
-        user.emailVerified = true;
-        const updatedUser = await user.save();
+        const updatedUser = await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: true },
+        });
 
         console.log({ updatedUser });
 
-        // await OTP.deleteOne({ email, otp });
+        // await prisma.otp.delete({ where: { id: otpDoc.id } });
         return true;
       } catch (error) {
         console.log("Mutation.verifyOTP error", error);

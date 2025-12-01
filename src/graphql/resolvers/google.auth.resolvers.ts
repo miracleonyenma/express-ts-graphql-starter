@@ -4,7 +4,7 @@ import {
   getGoogleOAuthTokens,
   getGoogleUser,
 } from "../../services/google.auth.services.js";
-import User from "../../models/user.model.js";
+import { userService } from "../../services/user.services.js";
 import {
   accessTokenData,
   createAccessToken,
@@ -32,7 +32,7 @@ const googleAuthResolvers = {
         });
 
         // upsert user
-        const user = await User.upsertGoogleUser({
+        const user = await userService.upsertGoogleUser({
           email: googleUser.email,
           firstName: googleUser.given_name,
           lastName: googleUser.family_name,
@@ -41,7 +41,7 @@ const googleAuthResolvers = {
         });
 
         const accessToken = createAccessToken(accessTokenData(user));
-        const refreshToken = createRefreshToken({ id: user._id });
+        const refreshToken = createRefreshToken({ id: user.id });
 
         return { accessToken, refreshToken, user };
       } catch (error) {

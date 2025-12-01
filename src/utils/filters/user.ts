@@ -1,8 +1,7 @@
 // ./src/utils/filters/user.ts
 
-import { FilterQuery, Types } from "mongoose";
+import { Prisma } from "../../generated/prisma/client.js";
 import { Filters, getDateFilter } from "./index.js";
-import { UserDocument } from "../../types/user.js"; // Update if you store types elsewhere
 
 /**
  * Creates filter conditions for User queries
@@ -11,39 +10,37 @@ export const UserFilters = ({
   filters = {},
 }: {
   filters: Filters.UserFilterOptions;
-}): FilterQuery<UserDocument> => {
-  const constructedFilters: FilterQuery<UserDocument> = {
+}): Prisma.UserWhereInput => {
+  const constructedFilters: Prisma.UserWhereInput = {
     // ID filters
     ...(filters.id &&
-      Array.isArray(filters.id) &&
-      filters.id.every((id) => Types.ObjectId.isValid(id)) && {
-        _id: { $in: filters.id.map((id) => new Types.ObjectId(id)) },
+      Array.isArray(filters.id) && {
+        id: { in: filters.id },
       }),
     ...(filters.id &&
-      typeof filters.id === "string" &&
-      Types.ObjectId.isValid(filters.id) && {
-        _id: new Types.ObjectId(filters.id),
+      typeof filters.id === "string" && {
+        id: filters.id,
       }),
 
-    // Regex fields
+    // Regex fields (Prisma uses contains, startsWith, endsWith, or mode: 'insensitive')
     ...(filters.firstName && {
-      firstName: { $regex: filters.firstName, $options: "i" },
+      firstName: { contains: filters.firstName, mode: "insensitive" },
     }),
     ...(filters.lastName && {
-      lastName: { $regex: filters.lastName, $options: "i" },
+      lastName: { contains: filters.lastName, mode: "insensitive" },
     }),
     ...(filters.email && {
-      email: { $regex: filters.email, $options: "i" },
+      email: { contains: filters.email, mode: "insensitive" },
     }),
     ...(filters.phone && {
-      phone: { $regex: filters.phone, $options: "i" },
+      phone: { contains: filters.phone, mode: "insensitive" },
     }),
 
     // Role filters
     ...(filters.role &&
       (Array.isArray(filters.role)
-        ? { roles: { $in: filters.role } }
-        : { roles: filters.role })),
+        ? { roles: { some: { name: { in: filters.role } } } }
+        : { roles: { some: { name: filters.role } } })),
 
     // Email verification
     ...(filters.emailVerified !== undefined && {
@@ -55,26 +52,26 @@ export const UserFilters = ({
 
     // Search term across multiple fields
     ...(filters.search && {
-      $or: [
-        { firstName: { $regex: filters.search, $options: "i" } },
-        { lastName: { $regex: filters.search, $options: "i" } },
-        { email: { $regex: filters.search, $options: "i" } },
-        { phone: { $regex: filters.search, $options: "i" } },
+      OR: [
+        { firstName: { contains: filters.search, mode: "insensitive" } },
+        { lastName: { contains: filters.search, mode: "insensitive" } },
+        { email: { contains: filters.search, mode: "insensitive" } },
+        { phone: { contains: filters.search, mode: "insensitive" } },
       ],
     }),
 
     // Date filters
     ...(filters.createdAfter && {
-      createdAt: { $gte: getDateFilter(filters.createdAfter) },
+      createdAt: { gte: getDateFilter(filters.createdAfter) },
     }),
     ...(filters.createdBefore && {
-      createdAt: { $lte: getDateFilter(filters.createdBefore) },
+      createdAt: { lte: getDateFilter(filters.createdBefore) },
     }),
     ...(filters.updatedAfter && {
-      updatedAt: { $gte: getDateFilter(filters.updatedAfter) },
+      updatedAt: { gte: getDateFilter(filters.updatedAfter) },
     }),
     ...(filters.updatedBefore && {
-      updatedAt: { $lte: getDateFilter(filters.updatedBefore) },
+      updatedAt: { lte: getDateFilter(filters.updatedBefore) },
     }),
   };
 

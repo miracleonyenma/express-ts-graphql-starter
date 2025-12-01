@@ -181,7 +181,7 @@ router.get("/files/:id", async (req: AuthenticatedRequest, res) => {
     }
 
     // Check if user owns the file
-    if (file.user.toString() !== userId) {
+    if (file.userId !== userId) {
       res.status(403).json({ error: "Access denied" });
       return;
     }
@@ -238,7 +238,7 @@ router.delete("/files/:id", async (req: AuthenticatedRequest, res) => {
     }
 
     // Check if user owns the file
-    if (file.user.toString() !== userId) {
+    if (file.userId !== userId) {
       res.status(403).json({ error: "Access denied" });
       return;
     }

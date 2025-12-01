@@ -1,16 +1,14 @@
 // ./src/middlewares/apiKey.middleware.ts
 
 import { Request, Response, NextFunction } from "express";
-import ApiKey from "../models/apiKey.model.js";
-import User from "../models/user.model.js"; // Import User model
-import { Types } from "mongoose";
+import prisma from "../config/prisma.js";
 
 export interface ApiKeyRequest extends Request {
   apiKey?: string;
   owner?: {
     id: string;
     email: string;
-    roles: Types.ObjectId[];
+    roles: any[]; // Prisma roles
     emailVerified: boolean;
   };
 }
@@ -77,7 +75,7 @@ export const validateApiKey = (options: ApiKeyOptions = {}) => {
         return;
       }
 
-      const key = await ApiKey.findOne({ key: apiKey });
+      const key = await prisma.apiKey.findUnique({ where: { key: apiKey } });
 
       if (!key) {
         req.apiKey = null;
@@ -95,14 +93,15 @@ export const validateApiKey = (options: ApiKeyOptions = {}) => {
       req.apiKey = apiKey;
 
       // Populate owner information if requested
-      if (populateOwner && key.owner) {
-        const owner = await User.findById(key.owner).select(
-          "email roles emailVerified"
-        );
+      if (populateOwner && key.ownerId) {
+        const owner = await prisma.user.findUnique({
+          where: { id: key.ownerId },
+          include: { roles: true },
+        });
 
         if (owner) {
           req.owner = {
-            id: owner._id.toString(),
+            id: owner.id,
             email: owner.email,
             roles: owner.roles || [],
             emailVerified: owner.emailVerified || false,

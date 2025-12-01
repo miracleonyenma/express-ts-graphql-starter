@@ -1,6 +1,6 @@
 // ./src/utils/filters/file.ts
 
-import mongoose from "mongoose";
+import { Prisma } from "../../generated/prisma/client.js";
 import { getDateFilter } from "./index.js";
 
 /**
@@ -25,34 +25,34 @@ export namespace Filters {
 }
 
 /**
- * Builds a MongoDB filter query for files based on the provided options.
+ * Builds a Prisma filter query for files based on the provided options.
  * @param {Filters.FileFilterOptions} options - The filter options.
- * @returns {mongoose.FilterQuery<any>} A MongoDB filter query object.
+ * @returns {Prisma.FileWhereInput} A Prisma filter query object.
  */
 export const buildFileFilters = (
   options: Filters.FileFilterOptions
-): mongoose.FilterQuery<any> => {
-  const filters: mongoose.FilterQuery<any> = {};
+): Prisma.FileWhereInput => {
+  const filters: Prisma.FileWhereInput = {};
 
   if (options.id) {
-    filters._id = Array.isArray(options.id) ? { $in: options.id } : options.id;
+    filters.id = Array.isArray(options.id) ? { in: options.id } : options.id;
   }
 
   if (options.user) {
-    filters.user = Array.isArray(options.user)
-      ? { $in: options.user.map((id) => new mongoose.Types.ObjectId(id)) }
-      : new mongoose.Types.ObjectId(options.user);
+    filters.userId = Array.isArray(options.user)
+      ? { in: options.user }
+      : options.user;
   }
 
   if (options.type) {
     filters.type = Array.isArray(options.type)
-      ? { $in: options.type }
+      ? { in: options.type }
       : options.type;
   }
 
   if (options.purpose) {
     filters.purpose = Array.isArray(options.purpose)
-      ? { $in: options.purpose }
+      ? { in: options.purpose }
       : options.purpose;
   }
 
@@ -61,32 +61,34 @@ export const buildFileFilters = (
   }
 
   if (options.search) {
-    const searchRegex = new RegExp(options.search, "i");
-    filters.$or = [{ name: searchRegex }, { purpose: searchRegex }];
+    filters.OR = [
+      { name: { contains: options.search, mode: "insensitive" } },
+      { purpose: { contains: options.search, mode: "insensitive" } },
+    ];
   }
 
-  const sizeFilter: { $gt?: number; $lt?: number } = {};
   if (options.sizeGreaterThan) {
-    sizeFilter.$gt = options.sizeGreaterThan;
-  }
-  if (options.sizeLessThan) {
-    sizeFilter.$lt = options.sizeLessThan;
-  }
-  if (Object.keys(sizeFilter).length > 0) {
-    filters.size = sizeFilter;
+    const currentSizeFilter = (filters.size as Prisma.IntFilter) || {};
+    filters.size = { ...currentSizeFilter, gt: options.sizeGreaterThan };
   }
 
-  const createdAtFilter: { $gte?: Date; $lte?: Date } = {};
-  const createdAfter = getDateFilter(options.createdAfter);
-  const createdBefore = getDateFilter(options.createdBefore);
-  if (createdAfter) {
-    createdAtFilter.$gte = createdAfter;
+  if (options.sizeLessThan) {
+    const currentSizeFilter = (filters.size as Prisma.IntFilter) || {};
+    filters.size = { ...currentSizeFilter, lt: options.sizeLessThan };
   }
-  if (createdBefore) {
-    createdAtFilter.$lte = createdBefore;
+
+  if (options.createdAfter) {
+    const createdAfter = new Date(options.createdAfter);
+    const currentCreatedAtFilter =
+      (filters.createdAt as Prisma.DateTimeFilter) || {};
+    filters.createdAt = { ...currentCreatedAtFilter, gte: createdAfter };
   }
-  if (Object.keys(createdAtFilter).length > 0) {
-    filters.createdAt = createdAtFilter;
+
+  if (options.createdBefore) {
+    const createdBefore = new Date(options.createdBefore);
+    const currentCreatedAtFilter =
+      (filters.createdAt as Prisma.DateTimeFilter) || {};
+    filters.createdAt = { ...currentCreatedAtFilter, lte: createdBefore };
   }
 
   return filters;

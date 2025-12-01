@@ -1,16 +1,17 @@
-// setupRoles.ts
-
-import Role from "../models/role.model.js";
+import prisma from "../config/prisma.js";
 
 const setupRoles = async () => {
   const roles = ["user", "developer", "admin"];
 
   for (const roleName of roles) {
-    const roleExists = await Role.findOne({ name: roleName });
+    const roleExists = await prisma.role.findUnique({
+      where: { name: roleName },
+    });
 
     if (!roleExists) {
-      const role = new Role({ name: roleName });
-      await role.save();
+      await prisma.role.create({
+        data: { name: roleName },
+      });
       console.log(`${roleName} role created.`);
     }
   }

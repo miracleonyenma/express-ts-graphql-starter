@@ -1,19 +1,20 @@
-import Role from "../../models/role.model.js";
+import prisma from "../../config/prisma.js";
 
 const roleResolvers = {
   Query: {
     roles: async () => {
-      return await Role.find();
+      return await prisma.role.findMany();
     },
   },
   Mutation: {
     createRole: async (_, { name }) => {
-      const role = new Role({ name });
-      await role.save();
+      const role = await prisma.role.create({
+        data: { name },
+      });
       return role;
     },
     deleteRole: async (_, { id }) => {
-      return await Role.findByIdAndDelete(id);
+      return await prisma.role.delete({ where: { id } });
     },
   },
 };

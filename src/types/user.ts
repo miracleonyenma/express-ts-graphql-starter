@@ -1,6 +1,6 @@
 // ./src/types/user.ts
 
-import mongoose, { Document, Model, Types } from "mongoose";
+import { User as PrismaUser, Role } from "../generated/prisma/client.js";
 
 export type AccessTokenResponse = {
   access_token: string;
@@ -24,21 +24,9 @@ export type GoogleUser = {
   locale: string;
 };
 
-export interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-  picture?: string;
-  count?: number;
-  password?: string;
-  emailVerified?: boolean;
-  phone?: string;
-  phoneVerified?: boolean;
-  roles?: Types.ObjectId[];
-  country?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+export type UserWithRoles = PrismaUser & { roles: Role[] };
+
+export type UserDocument = UserWithRoles;
 
 export type UpsertInput = {
   email: string;
@@ -69,18 +57,3 @@ export type EditUserInput = {
     country?: string;
   };
 };
-
-export interface UserDocument extends User, Document {}
-
-// Static methods interface
-export interface UserStaticMethods {
-  registerUser(data: RegisterUserInput): Promise<UserDocument>;
-  loginUser(data: { email: string; password: string }): Promise<UserDocument>;
-  me(data: { id: string }): Promise<UserDocument>;
-  editUser(data: EditUserInput): Promise<UserDocument>;
-  upsertGoogleUser(data: UpsertInput): Promise<UserDocument>;
-  upsertGithubUser(data: UpsertInput): Promise<UserDocument>;
-}
-
-// Combine the Model and static methods
-export interface UserModel extends Model<UserDocument>, UserStaticMethods {}

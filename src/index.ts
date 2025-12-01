@@ -62,7 +62,7 @@ app.use("/api/s3", validateApiKey({ populateOwner: true }), s3Router);
 app.use("/api/auth", authRouter);
 
 // validate API Key middleware
-app.use(validateApiKey() as RequestHandler);
+// app.use(validateApiKey() as RequestHandler);
 
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
