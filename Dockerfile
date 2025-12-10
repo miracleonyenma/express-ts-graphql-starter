@@ -10,6 +10,9 @@ RUN npm ci
 
 COPY . .
 
+# Generate Prisma Client
+RUN npx prisma generate
+
 RUN npm run compile
 
 FROM node:lts-slim
