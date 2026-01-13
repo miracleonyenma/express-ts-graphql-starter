@@ -1,30 +1,21 @@
 const otpTypeDefs = `#graphql
 
-type OTP {
-  id: ID
-  email: String
-  otp: String
-  createdAt: String
+type RequestOTPResponse {
+  success: Boolean!
+  message: String!
 }
 
-input SendOTPInput {
-  email: String!
+type VerifyOTPResponse {
+  success: Boolean!
+  message: String
+  accessToken: String
+  refreshToken: String
+  user: User
 }
 
-input VerifyOTPInput {
-  email: String!
-  otp: String!
-}
-
-type Query {
-  otps: [OTP]
-  otp(id: ID!): OTP
-}
-
-# Define the Mutation type
 type Mutation {
-  sendOTP(input: SendOTPInput!): String
-  verifyOTP(input: VerifyOTPInput!): Boolean
+  requestOTP(email: String!): RequestOTPResponse!
+  verifyOTP(email: String!, otp: String!, shouldLogin: Boolean): VerifyOTPResponse!
 }
 `;
 

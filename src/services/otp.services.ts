@@ -1,6 +1,6 @@
 import otpGenerator from "otp-generator";
 import { EmailService } from "../utils/emails/index.js";
-import OTP from "../models/otp.model.js";
+// import OTP from "../models/otp.model.js";
 import User from "../models/user.model.js";
 import { config } from "dotenv";
 
@@ -54,45 +54,56 @@ const sendVerificationMail = async (
 };
 
 const initOTPGeneration = async (email: string) => {
-  console.log({ email });
-
   try {
+    const normalizeEmail = email.toLowerCase().trim();
     // Check if user with email exists
-    const userExists = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizeEmail });
 
-    console.log({ userExists });
-
-    if (!userExists) {
-      throw new Error("User with email does not exist");
+    if (!user) {
+      // Security: Always return success to prevent email enumeration
+      // But for development/this starter we might throw or return warning.
+      // The guide says return success.
+      return {
+        success: true,
+        message: "If an account exists, a code has been sent.",
+      };
     }
 
-    // Generate OTP - 6 digits, no lowercase, no special chars
+    // Throttling
+    if (user.loginOTP?.lastSentAt) {
+      const timeSinceLast =
+        Date.now() - new Date(user.loginOTP.lastSentAt).getTime();
+      if (timeSinceLast < 60 * 1000) {
+        throw new Error("Please wait 60 seconds before requesting a new code.");
+      }
+    }
+
+    // Generate OTP - 6 digits
     const otp = otpGenerator.generate(6, {
       lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
       specialChars: false,
     });
 
-    // Save OTP to database with expiry (10 minutes from now)
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+    // Hash Code
+    const crypto = await import("crypto");
+    const codeHash = crypto.createHash("sha256").update(otp).digest("hex");
 
-    // Create or update OTP record
-    const OTPObject = await OTP.findOneAndUpdate(
-      { email },
-      {
-        email,
-        otp,
-        expiresAt,
-        verified: false,
-      },
-      { upsert: true, new: true }
-    );
+    // Save to User
+    user.loginOTP = {
+      codeHash,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins
+      attempts: 0,
+      lastSentAt: new Date(),
+    };
+
+    await user.save();
 
     // Send verification email with user's name if available
     const mailResponse = await sendVerificationMail(
-      email,
+      user.email,
       otp,
-      userExists.firstName
+      user.firstName
     );
 
     console.log("Email sent:", mailResponse);
@@ -100,16 +111,10 @@ const initOTPGeneration = async (email: string) => {
     return {
       success: true,
       message: "OTP sent successfully",
-      data: OTPObject,
     };
   } catch (error) {
     console.error("OTP generation error:", error);
-
-    return {
-      success: false,
-      message: error.message || "Failed to generate OTP",
-      error,
-    };
+    throw new Error(error.message || "Failed to generate OTP");
   }
 };
 

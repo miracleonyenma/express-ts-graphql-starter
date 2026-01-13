@@ -1,74 +1,71 @@
-import OTP from "../../models/otp.model.js";
 import User from "../../models/user.model.js";
 import { initOTPGeneration } from "../../services/otp.services.js";
+import { userService } from "../../services/user.services.js";
+import crypto from "crypto";
 
 const OTPResolvers = {
-  Query: {
-    otps: async (parent, args, context, info) => {
-      try {
-        const otps = await OTP.find({});
-
-        return otps;
-      } catch (error) {
-        console.log("Query.otps error", error);
-        throw new Error(error);
-      }
-    },
-    otp: async (parent, args, context, info) => {
-      try {
-        return await OTP.findById(args.id);
-      } catch (error) {
-        console.log("Query.otp error", error);
-        throw new Error(error);
-      }
-    },
-  },
   Mutation: {
-    sendOTP: async (parent, args, context, info) => {
+    requestOTP: async (parent, args, context, info) => {
       try {
-        console.log("args", args);
-
-        const email = args?.input?.email;
+        const email = args.email;
         if (!email) {
           throw new Error("Email is required");
         }
-        const response = await initOTPGeneration(email);
-        console.log({ response });
 
-        return `OTP sent to ${email} successfully`;
+        const response = await initOTPGeneration(email);
+        return response;
       } catch (error) {
-        console.log("Mutation.sendOTP error", error);
-        throw new Error(error);
+        console.log("Mutation.requestOTP error", error);
+        throw new Error(error.message || "Failed to request code");
       }
     },
     verifyOTP: async (parent, args, context, info) => {
       try {
-        console.log("args", args);
+        const { email, otp, shouldLogin } = args;
+        const normalizedEmail = email.toLowerCase().trim();
 
-        const email = args.input?.email;
-        const otp = args.input?.otp;
-        const otpDoc = await OTP.findOne({ email, otp });
-        console.log({ otpDoc });
+        const user = await User.findOne({ email: normalizedEmail }).select(
+          "+loginOTP.codeHash"
+        );
 
-        if (!otpDoc) {
-          throw new Error("Invalid OTP");
+        if (!user || !user.loginOTP || !user.loginOTP.codeHash) {
+          throw new Error("Invalid or expired code.");
         }
-        // get user from email
-        const user = await User.findOne({ email });
-        if (!user) {
-          throw new Error("User not found");
+
+        if (new Date() > user.loginOTP.expiresAt) {
+          throw new Error("Code has expired. Please request a new one.");
         }
-        // set user as verified
-        user.emailVerified = true;
-        const updatedUser = await user.save();
 
-        console.log({ updatedUser });
+        const inputHash = crypto.createHash("sha256").update(otp).digest("hex");
 
-        // await OTP.deleteOne({ email, otp });
-        return true;
+        if (inputHash !== user.loginOTP.codeHash) {
+          user.loginOTP.attempts = (user.loginOTP.attempts || 0) + 1;
+          await user.save();
+          throw new Error("Invalid code.");
+        }
+
+        // Success: Verify email and clear OTP
+        // Ideally we should keep OTP data for a bit or just clear it?
+        // "Clear loginOTP" implies it's done.
+        user.loginOTP = undefined;
+        user.emailVerified = true; // Always verify email on success
+        await user.save();
+
+        let authData = {};
+        if (shouldLogin) {
+          const tokens = await userService.generateAuthTokens(user);
+          authData = tokens;
+        }
+
+        return {
+          success: true,
+          message: "Verification successful.",
+          ...authData,
+          user, // Always return user if available/updated
+        };
       } catch (error) {
         console.log("Mutation.verifyOTP error", error);
-        throw new Error(error);
+        throw new Error(error.message || "Verification failed");
       }
     },
   },

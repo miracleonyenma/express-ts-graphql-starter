@@ -79,6 +79,12 @@ const userSchema = new mongoose.Schema<UserDocument, UserModel>(
       type: String,
       required: false,
     },
+    loginOTP: {
+      codeHash: { type: String, select: false }, // Never select by default
+      expiresAt: { type: Date },
+      attempts: { type: Number, default: 0 },
+      lastSentAt: { type: Date },
+    },
   },
   {
     timestamps: true,

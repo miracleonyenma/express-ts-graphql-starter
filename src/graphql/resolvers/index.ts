@@ -30,7 +30,6 @@ const resolvers = {
   Query: {
     ...userResolvers.Query,
     ...roleResolvers.Query,
-    ...otpResolvers.Query,
     ...apiKeyResolvers.Query,
     ...fileResolvers.Query,
   },

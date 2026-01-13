@@ -38,6 +38,12 @@ export interface User {
   country?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  loginOTP?: {
+    codeHash: string;
+    expiresAt: Date;
+    attempts: number;
+    lastSentAt: Date;
+  };
 }
 
 export type UpsertInput = {
