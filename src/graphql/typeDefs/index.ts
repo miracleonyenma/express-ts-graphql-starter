@@ -7,6 +7,7 @@ import otpTypeDefs from "../typeDefs/otp.js";
 import passwordResetTypeDefs from "../typeDefs/passwordReset.js";
 import roleTypeDefs from "../typeDefs/role.js";
 import userTypeDefs from "../typeDefs/user.js";
+import fileTypeDefs from "./file.typeDefs.js";
 
 /**
  * Global type definitions shared across all GraphQL schemas
@@ -101,6 +102,24 @@ const globalTypeDefs = `#graphql
     """
     desc
   }
+
+  """
+  Pagination information for Relay-style connections
+  """
+  type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String
+    endCursor: String
+  }
+
+  """
+  Generic success response for mutations
+  """
+  type SuccessResponse {
+    success: Boolean!
+    message: String
+  }
 `;
 
 /**
@@ -117,6 +136,7 @@ const typeDefs = `
   ${googleAuthTypeDefs}
   ${magicLinkTypeDefs}
   ${passwordResetTypeDefs}
+  ${fileTypeDefs}
 `;
 
 export default typeDefs;

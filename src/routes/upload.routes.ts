@@ -1,8 +1,7 @@
-// ./src/routes/s3.routes.ts
+// ./src/routes/upload.routes.ts
 
 import { Router } from "express";
 import multer from "multer";
-import { S3UploadService } from "../services/s3.service.js";
 import { FileService } from "../services/file.service.js";
 import { CustomRequest } from "../middlewares/auth.middleware.js";
 import { ApiKeyRequest } from "../middlewares/apiKey.middleware.js";
@@ -11,7 +10,6 @@ import { ApiKeyRequest } from "../middlewares/apiKey.middleware.js";
 type AuthenticatedRequest = CustomRequest & ApiKeyRequest;
 
 const router = Router();
-const s3Service = new S3UploadService();
 const fileService = new FileService();
 
 // Configure multer for memory storage
@@ -35,43 +33,37 @@ router.post(
 
       // Check authentication
       const userId = req.owner?.id || req.user?.data?.id;
+      // Note: Allow upload without user if API key is present (owner), logic depends on req.owner/req.user
       if (!userId) {
+        // Optionally allow anon uploads if that's the use case, but sticking to existing logic:
         res.status(401).json({ error: "Authentication required" });
         return;
       }
 
       const file = {
         buffer: req.file.buffer,
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
         size: req.file.size,
+        fieldname: req.file.fieldname,
+        encoding: req.file.encoding,
       };
 
-      const result = await s3Service.uploadFile(
+      const fileRecord = await fileService.uploadAndSave(
         file,
-        req.body.folder || "uploads"
+        req.body.provider || "s3",
+        {
+          user: userId,
+          purpose: req.body.purpose,
+          folder: req.body.folder,
+        }
       );
 
-      if (result.success) {
-        // Create a file record in the database
-        const fileRecord = await fileService.createFileRecord({
-          name: file.originalName,
-          type: file.mimeType,
-          size: file.size,
-          s3Key: result.key!,
-          s3Url: result.url!,
-          user: userId,
-          purpose: req.body.purpose, // Optional purpose from request body
-        });
-
-        res.json({
-          success: true,
-          message: "File uploaded successfully.",
-          file: fileRecord,
-        });
-      } else {
-        res.status(500).json({ error: result.error });
-      }
+      res.json({
+        success: true,
+        message: "File uploaded successfully.",
+        file: fileRecord,
+      });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -89,74 +81,51 @@ router.post(
         return;
       }
 
-      // Check authentication
       const userId = req.owner?.id || req.user?.data?.id;
       if (!userId) {
         res.status(401).json({ error: "Authentication required" });
         return;
       }
 
-      const files = req.files.map((file) => ({
-        buffer: file.buffer,
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        size: file.size,
-      }));
+      const uploadPromises = (req.files as Express.Multer.File[]).map(
+        (reqFile) => {
+          const file = {
+            buffer: reqFile.buffer,
+            originalname: reqFile.originalname,
+            mimetype: reqFile.mimetype,
+            size: reqFile.size,
+            fieldname: reqFile.fieldname,
+            encoding: reqFile.encoding,
+          };
 
-      const results = await s3Service.uploadFiles(
-        files,
-        req.body.folder || "uploads"
+          return fileService
+            .uploadAndSave(file, req.body.provider || "s3", {
+              user: userId,
+              purpose: req.body.purpose,
+              folder: req.body.folder,
+            })
+            .then((record) => ({ success: true, record }))
+            .catch((error) => ({
+              success: false,
+              error: error.message,
+              filename: file.originalname,
+            }));
+        }
       );
 
-      const successfulUploads = results.filter((r) => r.success);
-      const failedUploads = results.filter((r) => !r.success);
+      const results = await Promise.all(uploadPromises);
 
-      // Create file records for successful uploads
-      const fileRecords = await Promise.allSettled(
-        results.map(async (result, index) => {
-          if (!result.success || !result.key || !result.url) {
-            return null;
-          }
-
-          const file = files[index];
-          return await fileService.createFileRecord({
-            name: file.originalName,
-            type: file.mimeType,
-            size: file.size,
-            s3Key: result.key,
-            s3Url: result.url,
-            user: userId,
-            purpose: req.body.purpose,
-          });
-        })
-      );
-
-      // Extract successful file records
-      const createdRecords = fileRecords
-        .filter(
-          (result) => result.status === "fulfilled" && result.value !== null
-        )
-        .map((result) => (result as PromiseFulfilledResult<any>).value);
-
-      // Count failed record creations
-      const recordCreationFailures = fileRecords.filter(
-        (result) => result.status === "rejected"
-      ).length;
+      const successful = results
+        .filter((r) => r.success)
+        .map((r: any) => r.record);
+      const failed = results.filter((r) => !r.success);
 
       res.json({
-        success: failedUploads.length === 0 && recordCreationFailures === 0,
-        uploaded: successfulUploads.length,
-        failed: failedUploads.length,
-        recordsCreated: createdRecords.length,
-        recordCreationFailed: recordCreationFailures,
-        files: results.map((result, index) => ({
-          name: files[index].originalName,
-          success: result.success,
-          key: result.key,
-          url: result.url,
-          error: result.error,
-        })),
-        records: createdRecords,
+        success: failed.length === 0,
+        uploaded: successful.length,
+        failed: failed.length,
+        records: successful,
+        errors: failed,
       });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -181,7 +150,8 @@ router.get("/files/:id", async (req: AuthenticatedRequest, res) => {
     }
 
     // Check if user owns the file
-    if (file.user.toString() !== userId) {
+    if (file.user && file.user.toString() !== userId) {
+      // Allow if admin or something? Sticking to strict ownership for now
       res.status(403).json({ error: "Access denied" });
       return;
     }
@@ -238,12 +208,12 @@ router.delete("/files/:id", async (req: AuthenticatedRequest, res) => {
     }
 
     // Check if user owns the file
-    if (file.user.toString() !== userId) {
+    if (file.user && file.user.toString() !== userId) {
       res.status(403).json({ error: "Access denied" });
       return;
     }
 
-    // Delete file (this will delete from both S3 and database)
+    // Delete file (this will delete from both Cloud Provider and database)
     const result = await fileService.deleteFile(req.params.id);
 
     res.json(result);

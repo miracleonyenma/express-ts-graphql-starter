@@ -7,6 +7,7 @@ import apiKeyResolvers from "./apiKey.resolvers.js";
 import googleAuthResolvers from "./google.auth.resolvers.js";
 import magicLinkResolvers from "./magicLink.resolvers.js";
 import passwordResetResolvers from "./passwordReset.resolvers.js";
+import fileResolvers from "./file.resolvers.js";
 
 /**
  * Combine all resolvers into a single resolver map
@@ -31,6 +32,7 @@ const resolvers = {
     ...roleResolvers.Query,
     ...otpResolvers.Query,
     ...apiKeyResolvers.Query,
+    ...fileResolvers.Query,
   },
 
   /**
@@ -45,6 +47,7 @@ const resolvers = {
     ...googleAuthResolvers.Mutation,
     ...magicLinkResolvers.Mutation,
     ...passwordResetResolvers.Mutation,
+    ...fileResolvers.Mutation,
   },
 
   /**
@@ -53,6 +56,7 @@ const resolvers = {
    * Each type can have custom logic for computing or fetching field values
    */
   User: userResolvers.User,
+  File: fileResolvers.File,
   // Add other type resolvers as needed
 };
 

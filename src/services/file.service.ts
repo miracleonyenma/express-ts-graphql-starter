@@ -1,12 +1,13 @@
 // ./src/services/file.service.ts
 
-import FileModel, { FileDocument, IFile } from "../models/file.model.js";
+import FileModel, { FileDocument } from "../models/file.model.js";
 import {
   NotFoundError,
   ErrorHandler,
   BadRequestError,
 } from "./error.services.js";
-import { S3UploadService } from "./s3.service.js";
+import { StorageFactory } from "./storage/storage.factory.js";
+import { FileUpload } from "../interfaces/file-upload.interface.js";
 import paginateCollection, {
   PaginatedResult,
   Pagination,
@@ -15,50 +16,51 @@ import paginateCollection, {
 import { Filters, buildFileFilters } from "../utils/filters/file.js";
 import { logger } from "@untools/logger";
 
-export interface CreateFileInput
-  extends Omit<IFile, "user" | "purpose" | "s3Key" | "s3Url"> {
-  s3Key: string;
-  s3Url: string;
-  user?: string;
-  purpose?: string;
-}
-
-/**
- * Service for managing file records in the database.
- */
 export class FileService {
-  private s3Service: S3UploadService;
-
-  constructor() {
-    this.s3Service = new S3UploadService();
-  }
-
   /**
-   * Creates a new file record in the database.
-   * @param input - The data for the new file record.
-   * @returns The created file document.
+   * Uploads a file to the specified provider and saves the record in the database
    */
-  async createFileRecord(input: CreateFileInput): Promise<FileDocument> {
+  async uploadAndSave(
+    file: FileUpload,
+    providerType: string = "s3",
+    meta: { user?: string; purpose?: string; folder?: string }
+  ): Promise<FileDocument> {
     try {
-      if (!input.s3Key || !input.s3Url) {
-        throw new BadRequestError("S3 key and URL are required.");
+      // 1. Upload to Cloud (DB Agnostic)
+      const storageService = StorageFactory.getService(providerType);
+      const result = await storageService.uploadFile(
+        file,
+        meta.folder || "uploads"
+      );
+
+      if (!result.success || !result.key || !result.url) {
+        throw new Error(result.error || "Upload failed");
       }
-      const fileRecord = await FileModel.create(input);
+
+      // 2. Save to Database
+      const fileRecord = await FileModel.create({
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
+        provider: result.provider,
+        key: result.key,
+        url: result.url,
+        user: meta.user,
+        purpose: meta.purpose,
+      });
+
       logger.info(
-        `File record created for ${input.name} (key: ${input.s3Key})`
+        `File record created for ${fileRecord.name} (provider: ${fileRecord.provider}, key: ${fileRecord.key})`
       );
       return fileRecord;
     } catch (error) {
-      logger.error("Error creating file record:", error);
+      logger.error("Error uploading and saving file:", error);
       throw ErrorHandler.handleError(error);
     }
   }
 
-  /**
-   * Retrieves a single file record by its ID.
-   * @param id - The ID of the file record.
-   * @returns The file document.
-   */
+  // --- STANDARD CRUD METHODS ---
+
   async getFileById(id: string): Promise<FileDocument> {
     try {
       const fileRecord = await FileModel.findById(id).populate(
@@ -74,12 +76,6 @@ export class FileService {
     }
   }
 
-  /**
-   * Retrieves a paginated list of file records based on filters.
-   * @param pagination - Pagination options (page, limit).
-   * @param options - Filtering and sorting options.
-   * @returns A paginated result of file documents.
-   */
   async getFiles(
     pagination: Pagination,
     options?: {
@@ -100,28 +96,19 @@ export class FileService {
     }
   }
 
-  /**
-   * Deletes a file record and the corresponding file from S3.
-   * @param id - The ID of the file record to delete.
-   * @returns An object indicating the success of the operation.
-   */
   async deleteFile(id: string): Promise<{ success: boolean; message: string }> {
     try {
       const fileRecord = await this.getFileById(id);
-      if (!fileRecord.s3Key) {
-        throw new BadRequestError(
-          "File record does not have an S3 key to delete."
-        );
-      }
 
-      // Delete from S3 first
-      await this.s3Service.deleteFile(fileRecord.s3Key);
+      // Delete from Cloud Provider
+      const storageService = StorageFactory.getService(fileRecord.provider);
+      await storageService.deleteFile(fileRecord.key);
 
-      // Then delete from the database
+      // Delete from Database
       await FileModel.findByIdAndDelete(id);
 
       logger.info(
-        `Successfully deleted file record and S3 object for key: ${fileRecord.s3Key}`
+        `Successfully deleted file record and ${fileRecord.provider} object for key: ${fileRecord.key}`
       );
       return { success: true, message: "File deleted successfully." };
     } catch (error) {
