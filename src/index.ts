@@ -58,7 +58,7 @@ await server.start();
 // our loggerMiddleware.
 app.use(loggerMiddleware);
 
-app.use("/api/s3", validateApiKey({ populateOwner: true }), s3Router);
+app.use("/api/files", validateApiKey({ populateOwner: true }), s3Router);
 
 // Auth routes (magic link and OAuth REST endpoints)
 app.use("/api/auth", authRouter);
