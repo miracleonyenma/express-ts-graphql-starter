@@ -41,7 +41,7 @@ if (authConfig.isRestModeEnabled()) {
   });
 
   // Return 404 for REST endpoints when not enabled
-  router.use("*", (req, res) => {
+  router.use((req, res) => {
     res.status(404).json({
       success: false,
       error: "REST authentication endpoints are not enabled",
