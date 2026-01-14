@@ -175,7 +175,7 @@ express-ts-graphql-starter/
 
    ```graphql
    mutation {
-     requestOTP(email: "user@example.com") {
+     requestOTP(email: "user@example.com", shouldCreate: true) {
        success
        message
      }
