@@ -161,8 +161,9 @@ express-ts-graphql-starter/
 ### 4. **Passwordless/OTP Login**
 
 - **Request OTP**:
-  - Mutation: `requestOTP(email: String!)`
-  - Logic: Checks if user exists, generates a 6-digit code, hashes it (SHA-256), saves it to the user record, and sends it via email. Includes rate limiting (60s).
+  - Mutation: `requestOTP(email: String!, shouldCreate: Boolean)`
+  - Logic: Checks if user exists. If `shouldCreate` is true, creates a new user if none exists. Generates a 6-digit code, hashes it, saves it, and sends it via email.
+  - Rate limiting: 60s cooldown.
 - **Verify OTP**:
   - Mutation: `verifyOTP(email: String!, otp: String!, shouldLogin: Boolean)`
   - Logic: Verifies the code hash, checks expiration (10 mins), and tracks attempts.

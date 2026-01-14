@@ -12,7 +12,7 @@ const OTPResolvers = {
           throw new Error("Email is required");
         }
 
-        const response = await initOTPGeneration(email);
+        const response = await initOTPGeneration(email, args.shouldCreate);
         return response;
       } catch (error) {
         console.log("Mutation.requestOTP error", error);

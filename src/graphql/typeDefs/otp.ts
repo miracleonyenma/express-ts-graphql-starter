@@ -14,7 +14,7 @@ type VerifyOTPResponse {
 }
 
 type Mutation {
-  requestOTP(email: String!): RequestOTPResponse!
+  requestOTP(email: String!, shouldCreate: Boolean): RequestOTPResponse!
   verifyOTP(email: String!, otp: String!, shouldLogin: Boolean): VerifyOTPResponse!
 }
 `;
