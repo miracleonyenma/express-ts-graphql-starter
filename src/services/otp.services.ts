@@ -57,16 +57,21 @@ const initOTPGeneration = async (email: string) => {
   try {
     const normalizeEmail = email.toLowerCase().trim();
     // Check if user with email exists
-    const user = await User.findOne({ email: normalizeEmail });
+    let user = await User.findOne({ email: normalizeEmail });
 
     if (!user) {
-      // Security: Always return success to prevent email enumeration
-      // But for development/this starter we might throw or return warning.
-      // The guide says return success.
-      return {
-        success: true,
-        message: "If an account exists, a code has been sent.",
-      };
+      // Create new user if not exists
+      const firstName = normalizeEmail.split("@")[0];
+      user = await User.create({
+        email: normalizeEmail,
+        firstName,
+        lastName: "",
+        emailVerified: false,
+      });
+
+      // Import userService dynamically to avoid circular dependency issues if any
+      const { userService } = await import("./user.services.js");
+      await userService.assignRoleToUser(user._id.toString(), "user", true);
     }
 
     // Throttling
